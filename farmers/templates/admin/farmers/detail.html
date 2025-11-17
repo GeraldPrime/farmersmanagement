@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% load humanize %}
 
 {% block content %}
@@ -92,7 +93,7 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <div class="profile-bg-picture"
-                            style="background-image:url('/static/assets/images/bg-profile.jpg')">
+                            style="background-image:url('{% static 'assets/images/bg-profile.jpg' %}')">
                             <span class="picture-bg-overlay"></span>
                             <!-- overlay -->
                         </div>
@@ -104,7 +105,7 @@
                                         {% if farmer.picture %}
                                             <img src="{{ farmer.picture.url }}" alt="{{ farmer.get_full_name }}" class="avatar-lg rounded-circle" style="border: 3px solid #28a745; box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);">
                                         {% else %}
-                                            <img src="/static/assets/images/users/avatar-1.jpg" alt="Default avatar" class="avatar-lg rounded-circle" style="border: 3px solid #28a745; box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);">
+                                            <img src="{% static 'assets/images/users/avatar-1.jpg' %}" alt="Default avatar" class="avatar-lg rounded-circle" style="border: 3px solid #28a745; box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);">
                                         {% endif %}
                                     </div>
                                     <div class="">
