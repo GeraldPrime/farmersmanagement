@@ -1,0 +1,22 @@
+# Django Core
+Django==5.2.4
+
+# Database
+psycopg2-binary==2.9.10  # PostgreSQL adapter (for production)
+dj-database-url==2.3.0   # For parsing database URLs
+
+# Image Processing (required for ImageField)
+Pillow==10.4.0
+
+# Production Server
+gunicorn==23.0.0
+
+# Static Files (for production)
+whitenoise==6.9.0
+
+# Environment Variables
+python-decouple==3.8
+
+# Additional utilities
+python-dotenv==1.0.1
+
