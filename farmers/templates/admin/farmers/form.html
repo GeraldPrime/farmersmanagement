@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'farmers_list' %}">Farmers</a></li>
+                                <li class="breadcrumb-item active">{{ title }}</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">{{ title }}</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- Display form-level errors -->
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Error:</strong>
+                                <ul class="mb-0">
+                                    {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endif %}
+                            
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                
+                                <!-- Personal Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-user-line me-2"></i>Personal Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                            {{ form.firstname }}
+                                            {% if form.firstname.errors %}
+                                            <div class="text-danger small">{{ form.firstname.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Middle Name</label>
+                                            {{ form.middlename }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Surname <span class="text-danger">*</span></label>
+                                            {{ form.surname }}
+                                            {% if form.surname.errors %}
+                                            <div class="text-danger small">{{ form.surname.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Date of Birth</label>
+                                            {{ form.date_of_birth }}
+                                            {% if form.date_of_birth.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.date_of_birth.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Gender</label>
+                                            {{ form.gender }}
+                                            {% if form.gender.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.gender.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Photo {% if not farmer.picture %}<span class="text-danger">*</span>{% endif %}</label>
+                                            {{ form.picture }}
+                                            {% if form.picture.errors %}
+                                            <div class="text-danger small mt-1" data-field-id="id_picture">
+                                                <i class="ri-error-warning-line"></i> {{ form.picture.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                            {% if farmer.picture %}
+                                            <div class="mt-2">
+                                                <img src="{{ farmer.picture.url }}" alt="Current photo" 
+                                                     class="img-thumbnail" style="max-width: 150px;">
+                                                <p class="text-muted small mt-1">Current photo (upload new to replace)</p>
+                                            </div>
+                                            {% else %}
+                                            <small class="text-muted d-block mt-1">Please upload a photo of the farmer</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Identification -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-id-card-line me-2"></i>Identification</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">NIN (National Identification Number) <span class="text-danger">*</span></label>
+                                            {{ form.NIN }}
+                                            {% if form.NIN.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.NIN.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">BVN (Bank Verification Number)</label>
+                                            {{ form.BVN }}
+                                            {% if form.BVN.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.BVN.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Contact Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-phone-line me-2"></i>Contact Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                            {{ form.phone }}
+                                            {% if form.phone.errors %}
+                                            <div class="text-danger small">{{ form.phone.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Address <span class="text-danger">*</span></label>
+                                            {{ form.address }}
+                                            {% if form.address.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.address.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Location Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-map-pin-line me-2"></i>Location Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label">State</label>
+                                            {{ form.state }}
+                                            {% if form.state.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.state.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">LGA (Local Government Area)</label>
+                                            {{ form.LGA }}
+                                            {% if form.LGA.errors %}
+                                            <div class="text-danger small mt-1" data-field-id="id_LGA">
+                                                <i class="ri-error-warning-line"></i> {{ form.LGA.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Ward</label>
+                                            {{ form.ward }}
+                                            {% if form.ward.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.ward.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Farm Location</label>
+                                            {{ form.farm_location }}
+                                            {% if form.farm_location.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.farm_location.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Group Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-group-line me-2"></i>Group Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Group Type</label>
+                                            {{ form.group_type }}
+                                            {% if form.group_type.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.group_type.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Group Name</label>
+                                            {{ form.group_name }}
+                                            {% if form.group_name.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.group_name.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Group Leader Name</label>
+                                            {{ form.group_leader_name }}
+                                            {% if form.group_leader_name.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.group_leader_name.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Group Leader Phone</label>
+                                            {{ form.group_leader_phone }}
+                                            {% if form.group_leader_phone.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.group_leader_phone.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Farming Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-plant-line me-2"></i>Farming Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Crop Type(s)</label>
+                                            {{ form.crop }}
+                                            {% if form.crop.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.crop.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Registration Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-file-list-line me-2"></i>Registration Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Vendor (Who Registered)</label>
+                                            {{ form.vendor }}
+                                            {% if form.vendor.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.vendor.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Farmer Status</label>
+                                            {{ form.farmer_status }}
+                                            {% if form.farmer_status.errors %}
+                                            <div class="text-danger small mt-1">
+                                                <i class="ri-error-warning-line"></i> {{ form.farmer_status.errors|join:", " }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <a href="{% url 'farmers_list' %}" class="btn btn-secondary">
+                                        <i class="ri-close-line me-1"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-save-line me-1"></i> Save Farmer
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stateSelect = document.getElementById('id_state');
+    const lgaSelect = document.getElementById('id_LGA');
+    
+    // Store the current LGA value - check both the select value and any hidden/selected option
+    let currentLgaId = lgaSelect.value;
+    // Also check if there's a selected option in the dropdown (for form re-render after errors)
+    const selectedOption = lgaSelect.querySelector('option[selected]');
+    if (selectedOption && selectedOption.value) {
+        currentLgaId = selectedOption.value;
+    }
+    
+    // Function to load LGAs for selected state
+    function loadLGAs(stateId, preserveLgaId = null) {
+        // Clear existing options but keep the first empty option structure
+        const firstOption = lgaSelect.querySelector('option[value=""]');
+        lgaSelect.innerHTML = '<option value="">---------</option>';
+        
+        if (!stateId) {
+            return;
+        }
+        
+        // Fetch LGAs for the selected state
+        fetch(`{% url 'get_lgas_by_state' %}?state_id=${stateId}`)
+            .then(response => response.json())
+            .then(data => {
+                data.lgas.forEach(lga => {
+                    const option = document.createElement('option');
+                    option.value = lga.id;
+                    option.textContent = lga.name;
+                    // Preserve the LGA selection if it matches
+                    const lgaToPreserve = preserveLgaId || currentLgaId;
+                    if (lgaToPreserve && lga.id == lgaToPreserve) {
+                        option.selected = true;
+                    }
+                    lgaSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading LGAs:', error);
+            });
+    }
+    
+    // Load LGAs when state changes
+    stateSelect.addEventListener('change', function() {
+        // Clear the preserved LGA when state changes
+        currentLgaId = null;
+        loadLGAs(this.value);
+    });
+    
+    // If state is already selected (when editing or after form errors), load its LGAs
+    if (stateSelect.value) {
+        loadLGAs(stateSelect.value, currentLgaId);
+    }
+    
+    // Also check if form was submitted with errors - preserve the LGA value from POST data
+    // This handles the case when form validation fails and form is re-rendered
+    if (lgaSelect.options.length > 1) {
+        // If there are already options (from server-side rendering), preserve selection
+        const lgaValueToPreserve = currentLgaId || (lgaSelect.options[lgaSelect.selectedIndex] && lgaSelect.options[lgaSelect.selectedIndex].value);
+        if (lgaValueToPreserve && stateSelect.value) {
+            // Re-load to ensure the selected LGA is in the list
+            loadLGAs(stateSelect.value, lgaValueToPreserve);
+        }
+    }
+});
+</script>
+{% endblock content %}
+

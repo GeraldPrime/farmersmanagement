@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Groups</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Groups Management</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="header-title mb-0">All Groups</h5>
+                                <a href="{% url 'group_create' %}" class="btn btn-primary">
+                                    <i class="ri-add-line me-1"></i> Add New Group
+                                </a>
+                            </div>
+
+                            <!-- Search and Filter -->
+                            <form method="get" class="mb-3">
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <input type="text" name="search" class="form-control" 
+                                               placeholder="Search by name, type, description..." 
+                                               value="{{ search_query }}">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <select name="status" class="form-select">
+                                            <option value="">All Status</option>
+                                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select name="type" class="form-select">
+                                            <option value="">All Group Types</option>
+                                            {% for gt in group_types %}
+                                            <option value="{{ gt.id }}" {% if type_filter == gt.id|stringformat:"s" %}selected{% endif %}>
+                                                {{ gt.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="submit" class="btn btn-info w-100">
+                                            <i class="ri-search-line"></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <a href="{% url 'groups_list' %}" class="btn btn-secondary w-100">
+                                            <i class="ri-refresh-line"></i> Reset
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div class="table-responsive">
+                                <table class="table table-nowrap table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Group Name</th>
+                                            <th>Group Type</th>
+                                            <th>Group Leader</th>
+                                            <th>Description</th>
+                                            <th>Members</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for group in groups %}
+                                        <tr>
+                                            <td><strong>{{ group.group_name }}</strong></td>
+                                            <td>
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    {{ group.group_type.name }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if group.group_leader %}
+                                                <a href="{% url 'farmer_detail' group.group_leader.pk %}" class="text-decoration-none">
+                                                    <i class="ri-user-star-line me-1"></i>{{ group.group_leader.get_full_name }}
+                                                </a>
+                                                {% else %}
+                                                <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if group.description %}
+                                                <span title="{{ group.description }}">
+                                                    {{ group.description|truncatewords:10 }}
+                                                </span>
+                                                {% else %}
+                                                <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'group_detail' group.pk %}" class="badge bg-info">
+                                                    {{ group.member_count }} member{{ group.member_count|pluralize }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if group.is_active %}
+                                                <span class="badge bg-success-subtle text-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ group.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'group_detail' group.pk %}" 
+                                                       class="btn btn-sm btn-info" title="View">
+                                                        <i class="ri-eye-line"></i>
+                                                    </a>
+                                                    <a href="{% url 'group_edit' group.pk %}" 
+                                                       class="btn btn-sm btn-warning" title="Edit">
+                                                        <i class="ri-pencil-line"></i>
+                                                    </a>
+                                                    <a href="{% url 'group_delete' group.pk %}" 
+                                                       class="btn btn-sm btn-danger" title="Delete"
+                                                       onclick="return confirm('Are you sure you want to delete this group?');">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="8" class="text-center text-muted py-4">
+                                                <i class="ri-inbox-line fs-48 text-muted d-block mb-2"></i>
+                                                No groups found. <a href="{% url 'group_create' %}">Create your first group</a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

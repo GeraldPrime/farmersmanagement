@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'redemption_centers_list' %}">Redemption Centers</a></li>
+                                <li class="breadcrumb-item active">{{ title }}</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">{{ title }}</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- Display form-level errors -->
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Error:</strong>
+                                <ul class="mb-0">
+                                    {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endif %}
+                            
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <!-- Redemption Center Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-building-line me-2"></i>Redemption Center Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                            {{ form.fullname }}
+                                            {% if form.fullname.errors %}
+                                            <div class="text-danger small">{{ form.fullname.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Contact Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-phone-line me-2"></i>Contact Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                                            {{ form.email }}
+                                            {% if form.email.errors %}
+                                            <div class="text-danger small">{{ form.email.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                            {{ form.phone_no }}
+                                            {% if form.phone_no.errors %}
+                                            <div class="text-danger small">{{ form.phone_no.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Address <span class="text-danger">*</span></label>
+                                            {{ form.redemption_center_address }}
+                                            {% if form.redemption_center_address.errors %}
+                                            <div class="text-danger small">{{ form.redemption_center_address.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Description -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-file-text-line me-2"></i>Description</h5>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Description</label>
+                                            {{ form.description }}
+                                            {% if form.description.errors %}
+                                            <div class="text-danger small">{{ form.description.errors }}</div>
+                                            {% endif %}
+                                            <small class="text-muted">Optional description of the redemption center</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if center %}
+                                <hr>
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-file-list-line me-2"></i>Registration Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Center ID</label>
+                                            <input type="text" class="form-control" value="{{ center.redemption_center_id }}" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Created</label>
+                                            <input type="text" class="form-control" value="{{ center.created_at|date:'F d, Y H:i' }}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <a href="{% url 'redemption_centers_list' %}" class="btn btn-secondary">
+                                        <i class="ri-close-line me-1"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-save-line me-1"></i> Save Redemption Center
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

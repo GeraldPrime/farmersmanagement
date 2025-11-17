@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'group_types_list' %}">Group Types</a></li>
+                                <li class="breadcrumb-item active">Details</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Group Type Details</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="ri-folder-line fs-48 text-primary"></i>
+                            </div>
+                            <h4>{{ group_type.name }}</h4>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Statistics</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Total Groups:</span>
+                                <strong class="text-primary">{{ group_type.groups_count }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Created:</span>
+                                <strong>{{ group_type.created_at|date:"F d, Y" }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Last Updated:</span>
+                                <strong>{{ group_type.updated_at|date:"F d, Y" }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">Group Type Information</h5>
+                                <div>
+                                    <a href="{% url 'group_type_edit' group_type.pk %}" class="btn btn-warning btn-sm">
+                                        <i class="ri-pencil-line"></i> Edit
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-3"><strong>Name:</strong></div>
+                                <div class="col-md-9">{{ group_type.name }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-3"><strong>Description:</strong></div>
+                                <div class="col-md-9">{{ group_type.description|default:"-"|linebreaks }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Groups of this Type -->
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">Groups of this Type ({{ groups.count }})</h5>
+                            </div>
+                            
+                            {% if groups %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Group Name</th>
+                                            <th>Members</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for group in groups %}
+                                        <tr>
+                                            <td><strong>{{ group.group_name }}</strong></td>
+                                            <td>
+                                                <span class="badge bg-info">{{ group.member_count }}</span>
+                                            </td>
+                                            <td>
+                                                {% if group.is_active %}
+                                                <span class="badge bg-success-subtle text-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ group.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'group_detail' group.pk %}" class="btn btn-sm btn-info">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="ri-inbox-line fs-48 d-block mb-2"></i>
+                                No groups of this type yet.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

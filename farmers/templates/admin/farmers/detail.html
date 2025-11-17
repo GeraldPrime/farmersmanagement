@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+    <style>
+        .status-badge {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            border: 2px solid #28a745;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .inactive-badge {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            color: white;
+            border: 2px solid #6c757d;
+        }
+        
+        .profile-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-section h6 {
+            color: #28a745;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #28a745;
+        }
+        
+        .info-row {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #6c757d;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .info-value {
+            color: #212529;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .status-inactive {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+    </style>
+
+    <div class="content-page">
+        <div class="content">
+            <!-- Start Content-->
+            <div class="container-fluid">
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="profile-bg-picture"
+                            style="background-image:url('/static/assets/images/bg-profile.jpg')">
+                            <span class="picture-bg-overlay"></span>
+                            <!-- overlay -->
+                        </div>
+                        <!-- meta -->
+                        <div class="profile-user-box">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="profile-user-img">
+                                        {% if farmer.picture %}
+                                            <img src="{{ farmer.picture.url }}" alt="{{ farmer.get_full_name }}" class="avatar-lg rounded-circle" style="border: 3px solid #28a745; box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);">
+                                        {% else %}
+                                            <img src="/static/assets/images/users/avatar-1.jpg" alt="Default avatar" class="avatar-lg rounded-circle" style="border: 3px solid #28a745; box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);">
+                                        {% endif %}
+                                    </div>
+                                    <div class="">
+                                        <h4 class="mt-4 fs-17 ellipsis">
+                                            {{ farmer.get_full_name }}
+                                        </h4>
+                                        <div class="mb-2">
+                                            {% if farmer.farmer_status == 'active' %}
+                                                <span class="badge status-badge px-3 py-2 fs-6">
+                                                    ACTIVE FARMER
+                                                </span>
+                                            {% else %}
+                                                <span class="badge inactive-badge px-3 py-2 fs-6">
+                                                    INACTIVE FARMER
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="text-muted mb-0"><small>Farmer ID: #{{ farmer.farmer_id }}</small></p>
+                                        {% if farmer.address %}
+                                        <p class="text-muted mb-0"><small>{{ farmer.address }}</small></p>
+                                        {% endif %}
+                                        {% if farmer.state %}
+                                        <p class="text-muted mb-0"><small>{{ farmer.state.name }}{% if farmer.LGA %}, {{ farmer.LGA.name }}{% endif %}</small></p>
+                                        {% endif %}
+                                        <p class="text-muted mb-0"><small>Date Registered: {{ farmer.date_registered|date:"F d, Y" }}</small></p>
+                                        <p class="text-muted mb-0"><small>Last Updated: {{ farmer.updated_at|date:"F d, Y" }}</small></p>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap">
+                                        <a href="{% url 'farmer_edit' farmer.pk %}" class="btn btn-soft-danger">
+                                            <i class="ri-settings-2-line align-text-bottom me-1 fs-16 lh-1"></i>
+                                            Edit Profile
+                                        </a>
+                                        <a href="{% url 'farmers_list' %}" class="btn btn-soft-secondary">
+                                            <i class="ri-arrow-left-line align-text-bottom me-1 fs-16 lh-1"></i>
+                                            Back to List
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--/ meta -->
+                    </div>
+                </div>
+                <!-- end row -->
+
+                <div class="row">
+                    <!-- Left Column - Main Information -->
+                    <div class="col-lg-8">
+                        <div class="card profile-card mb-3">
+                            <div class="card-body">
+                                <!-- Personal Information -->
+                                <div class="info-section">
+                                    <h6><i class="ri-user-line me-2"></i>Personal Information</h6>
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Full Name</div>
+                                            <div class="col-md-8 info-value">{{ farmer.get_full_name }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Farmer ID</div>
+                                            <div class="col-md-8 info-value">
+                                                <span class="badge bg-success">#{{ farmer.farmer_id }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if farmer.date_of_birth %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Date of Birth</div>
+                                            <div class="col-md-8 info-value">{{ farmer.date_of_birth|date:"F d, Y" }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.gender %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Gender</div>
+                                            <div class="col-md-8 info-value">{{ farmer.get_gender_display }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.NIN %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">NIN</div>
+                                            <div class="col-md-8 info-value">{{ farmer.NIN }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.BVN %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">BVN</div>
+                                            <div class="col-md-8 info-value">{{ farmer.BVN }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Contact Information -->
+                                <div class="info-section">
+                                    <h6><i class="ri-phone-line me-2"></i>Contact Information</h6>
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Phone</div>
+                                            <div class="col-md-8 info-value">
+                                                <a href="tel:{{ farmer.phone }}" class="text-decoration-none">
+                                                    <i class="ri-phone-line me-1"></i>{{ farmer.phone }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if farmer.address %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Address</div>
+                                            <div class="col-md-8 info-value">{{ farmer.address|linebreaks }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.state %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">State</div>
+                                            <div class="col-md-8 info-value">{{ farmer.state.name }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.LGA %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">LGA</div>
+                                            <div class="col-md-8 info-value">{{ farmer.LGA.name }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.ward %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Ward</div>
+                                            <div class="col-md-8 info-value">{{ farmer.ward }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Farming Information -->
+                                {% if farmer.farm_location or farmer.crop %}
+                                <div class="info-section">
+                                    <h6><i class="ri-plant-line me-2"></i>Farming Information</h6>
+                                    {% if farmer.farm_location %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Farm Location</div>
+                                            <div class="col-md-8 info-value">{{ farmer.farm_location|linebreaks }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.crop %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Crop Type(s)</div>
+                                            <div class="col-md-8 info-value">{{ farmer.crop }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+
+                                <!-- Group Information -->
+                                {% if farmer.group_type or farmer.group_name or farmer.group_leader_name %}
+                                <div class="info-section">
+                                    <h6><i class="ri-group-line me-2"></i>Group Information</h6>
+                                    {% if farmer.group_type %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Group Type</div>
+                                            <div class="col-md-8 info-value">
+                                                <span class="badge bg-primary">{{ farmer.group_type.name }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.group_name %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Group Name</div>
+                                            <div class="col-md-8 info-value">
+                                                <a href="{% url 'group_detail' farmer.group_name.pk %}" class="text-decoration-none">
+                                                    {{ farmer.group_name.group_name }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.group_leader_name %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Group Leader Name</div>
+                                            <div class="col-md-8 info-value">{{ farmer.group_leader_name }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if farmer.group_leader_phone %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Group Leader Phone</div>
+                                            <div class="col-md-8 info-value">
+                                                <a href="tel:{{ farmer.group_leader_phone }}" class="text-decoration-none">
+                                                    <i class="ri-phone-line me-1"></i>{{ farmer.group_leader_phone }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+
+                                <!-- Registration Information -->
+                                <div class="info-section">
+                                    <h6><i class="ri-file-list-line me-2"></i>Registration Information</h6>
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Registered By (Vendor)</div>
+                                            <div class="col-md-8 info-value">
+                                                {% if farmer.vendor %}
+                                                    <a href="{% url 'vendor_detail' farmer.vendor.pk %}" class="text-decoration-none">
+                                                        {{ farmer.vendor.get_full_name }} ({{ farmer.vendor.vendor_registration_no }})
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted">Not assigned</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Date Registered</div>
+                                            <div class="col-md-8 info-value">{{ farmer.date_registered|date:"F d, Y H:i" }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Status</div>
+                                            <div class="col-md-8">
+                                                {% if farmer.farmer_status == 'active' %}
+                                                <span class="status-active">Active Farmer</span>
+                                                {% else %}
+                                                <span class="status-inactive">Inactive Farmer</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Quick Info -->
+                    <div class="col-lg-4">
+                        <div class="card profile-card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title mb-4">
+                                    <i class="ri-information-line me-2 text-success"></i>Quick Info
+                                </h5>
+                                <div class="text-center mb-4">
+                                    <div class="mb-3">
+                                        {% if farmer.farmer_status == 'active' %}
+                                        <span class="status-active">Active Farmer</span>
+                                        {% else %}
+                                        <span class="status-inactive">Inactive Farmer</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mt-3">
+                                        <p class="text-muted mb-1">Farmer ID</p>
+                                        <h4 class="text-success mb-0">#{{ farmer.farmer_id }}</h4>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'farmer_edit' farmer.pk %}" class="btn btn-success">
+                                        <i class="ri-pencil-line me-1"></i> Edit Farmer
+                                    </a>
+                                    <a href="{% url 'farmers_list' %}" class="btn btn-outline-secondary">
+                                        <i class="ri-arrow-left-line me-1"></i> Back to List
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- container -->
+        </div>
+    </div>
+{% endblock content %}

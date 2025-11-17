@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Home</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Dashboard</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card widget-flat text-bg-primary">
+                        <div class="card-body">
+                            <div class="float-end">
+                                <i class="ri-user-3-line widget-icon"></i>
+                            </div>
+                            <h6 class="text-uppercase mt-0" title="Farmers">Total Farmers</h6>
+                            <h2 class="my-2">{{ total_farmers }}</h2>
+                            <p class="mb-0">
+                                <span class="badge bg-white bg-opacity-10 me-1">{{ active_farmers }} Active</span>
+                                <span class="text-nowrap">Farmers</span>
+                            </p>
+                        </div>
+                    </div>
+                </div> <!-- end col-->
+
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card widget-flat text-bg-success">
+                        <div class="card-body">
+                            <div class="float-end">
+                                <i class="ri-group-line widget-icon"></i>
+                            </div>
+                            <h6 class="text-uppercase mt-0" title="Groups">Total Groups</h6>
+                            <h2 class="my-2">{{ total_groups }}</h2>
+                            <p class="mb-0">
+                                <span class="badge bg-white bg-opacity-10 me-1">{{ active_groups }} Active</span>
+                                <span class="text-nowrap">Groups</span>
+                            </p>
+                        </div>
+                    </div>
+                </div> <!-- end col-->
+
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card widget-flat text-bg-info">
+                        <div class="card-body">
+                            <div class="float-end">
+                                <i class="ri-store-line widget-icon"></i>
+                            </div>
+                            <h6 class="text-uppercase mt-0" title="Vendors">Total Vendors</h6>
+                            <h2 class="my-2">{{ total_vendors }}</h2>
+                            <p class="mb-0">
+                                <span class="badge bg-white bg-opacity-10 me-1">{{ active_vendors }} Active</span>
+                                <span class="text-nowrap">Vendors</span>
+                            </p>
+                        </div>
+                    </div>
+                </div> <!-- end col-->
+
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card widget-flat text-bg-warning">
+                        <div class="card-body">
+                            <div class="float-end">
+                                <i class="ri-building-line widget-icon"></i>
+                            </div>
+                            <h6 class="text-uppercase mt-0" title="Redemption Centers">Redemption Centers</h6>
+                            <h2 class="my-2">{{ total_redemption_centers }}</h2>
+                            <p class="mb-0">
+                                <span class="badge bg-white bg-opacity-10 me-1">{{ total_group_types }} Group Types</span>
+                                <span class="text-nowrap">Centers</span>
+                            </p>
+                        </div>
+                    </div>
+                </div> <!-- end col-->
+            </div>
+
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="header-title mb-0">Recent Farmers</h5>
+                                <a href="{% url 'farmers_list' %}" class="btn btn-sm btn-primary">View All</a>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-nowrap table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>State</th>
+                                            <th>Group</th>
+                                            <th>Status</th>
+                                            <th>Date Registered</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for farmer in recent_farmers %}
+                                        <tr>
+                                            <td>{{ farmer.farmer_id }}</td>
+                                            <td>
+                                                {% if farmer.picture %}
+                                                <img src="{{ farmer.picture.url }}" alt="{{ farmer.get_full_name }}" 
+                                                     class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
+                                                {% endif %}
+                                                {{ farmer.get_full_name }}
+                                            </td>
+                                            <td>{{ farmer.phone }}</td>
+                                            <td>{{ farmer.state.name|default:"-" }}</td>
+                                            <td>{{ farmer.group_name.group_name|default:"-" }}</td>
+                                            <td>
+                                                {% if farmer.farmer_status == 'active' %}
+                                                <span class="badge bg-success-subtle text-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ farmer.date_registered|date:"M d, Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'farmer_detail' farmer.pk %}" class="btn btn-sm btn-info">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="8" class="text-center text-muted">No farmers registered yet.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
