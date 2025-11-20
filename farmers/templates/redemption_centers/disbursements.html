@@ -1,0 +1,192 @@
+{% extends "redemption_centers/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Disbursements History | Redemption Center Portal{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'redemption_center_dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Disbursements History</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Disbursements History</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <!-- Statistics -->
+            <div class="row">
+                <div class="col-xl-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ total_disbursements|intcomma }}</h4>
+                                    <p class="text-muted mb-0">Total Disbursements</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-primary-subtle rounded-circle">
+                                        <i class="ri-file-list-3-line font-20 text-primary"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ total_quantity_disbursed|intcomma }}</h4>
+                                    <p class="text-muted mb-0">Total Items Disbursed</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-success-subtle rounded-circle">
+                                        <i class="ri-hand-coin-line font-20 text-success"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ unique_farmers|intcomma }}</h4>
+                                    <p class="text-muted mb-0">Unique Farmers Served</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-info-subtle rounded-circle">
+                                        <i class="ri-user-3-line font-20 text-info"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="get" class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Search</label>
+                                    <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Search by farmer name or NIN...">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Incentive</label>
+                                    <select class="form-select" name="incentive">
+                                        <option value="">All Incentives</option>
+                                        {% for incentive in available_incentives %}
+                                        <option value="{{ incentive.incentive_id }}" {% if incentive_filter == incentive.incentive_id|stringformat:"s" %}selected{% endif %}>
+                                            {{ incentive.incentive_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date From</label>
+                                    <input type="date" class="form-control" name="date_from" value="{{ date_from }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date To</label>
+                                    <input type="date" class="form-control" name="date_to" value="{{ date_to }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="ri-search-line me-1"></i>Filter
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disbursements Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">All Disbursements</h4>
+                            <div class="table-responsive">
+                                <table class="table table-nowrap table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date & Time</th>
+                                            <th>Farmer</th>
+                                            <th>NIN</th>
+                                            <th>Incentive</th>
+                                            <th>Quantity</th>
+                                            <th>Disbursed By</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for disbursement in disbursements %}
+                                        <tr>
+                                            <td>{{ disbursement.disbursement_date|date:"M d, Y H:i" }}</td>
+                                            <td>
+                                                <strong>{{ disbursement.farmer.get_full_name }}</strong>
+                                                <br><small class="text-muted">{{ disbursement.farmer.phone }}</small>
+                                            </td>
+                                            <td><code>{{ disbursement.farmer.NIN }}</code></td>
+                                            <td>{{ disbursement.incentive.incentive_name }}</td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ disbursement.quantity|intcomma }}</span>
+                                            </td>
+                                            <td>
+                                                {% if disbursement.disbursed_by %}
+                                                    {{ disbursement.disbursed_by.username }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if disbursement.notes %}
+                                                    <small class="text-muted">{{ disbursement.notes|truncatewords:10 }}</small>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted py-4">
+                                                No disbursements found.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

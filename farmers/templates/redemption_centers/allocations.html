@@ -1,0 +1,133 @@
+{% extends "redemption_centers/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Allocations | Redemption Center Portal{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'redemption_center_dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Allocations</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Incentive Allocations</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <!-- Filters -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="get" class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Search</label>
+                                    <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Search by incentive name or description...">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Date From</label>
+                                    <input type="date" class="form-control" name="date_from" value="{{ date_from }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Date To</label>
+                                    <input type="date" class="form-control" name="date_to" value="{{ date_to }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="ri-search-line me-1"></i>Filter
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Allocations Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">All Allocations</h4>
+                            <div class="table-responsive">
+                                <table class="table table-nowrap table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Incentive Name</th>
+                                            <th>Total Quantity</th>
+                                            <th>Disbursed</th>
+                                            <th>Remaining</th>
+                                            <th>Date Sent</th>
+                                            <th>Status</th>
+                                            <th>Progress</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in allocations %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ item.allocation.incentive_name }}</strong>
+                                                {% if item.allocation.description %}
+                                                <br><small class="text-muted">{{ item.allocation.description|truncatewords:10 }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ item.allocation.quantity|intcomma }}</td>
+                                            <td>{{ item.disbursed_quantity|intcomma }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if item.remaining_quantity > 0 %}info{% else %}secondary{% endif %}">
+                                                    {{ item.remaining_quantity|intcomma }}
+                                                </span>
+                                            </td>
+                                            <td>{{ item.allocation.date_sent|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if item.remaining_quantity > 0 %}
+                                                    <span class="badge bg-success">Available</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Depleted</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 8px; width: 100px;">
+                                                    <div class="progress-bar bg-{% if item.percentage_remaining > 50 %}success{% elif item.percentage_remaining > 25 %}warning{% else %}danger{% endif %}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ item.percentage_remaining }}%"
+                                                         aria-valuenow="{{ item.percentage_remaining }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">{{ item.percentage_remaining|floatformat:1 }}%</small>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted py-4">
+                                                No allocations found.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

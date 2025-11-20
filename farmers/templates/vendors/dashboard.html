@@ -1,0 +1,169 @@
+{% extends "vendors/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Dashboard | Vendor Portal{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item active">Dashboard</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Welcome, {{ vendor.get_full_name }}</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <!-- Statistics Cards -->
+            <div class="row">
+                <div class="col-xl-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ total_farmers }}</h4>
+                                    <p class="text-muted mb-0">Total Farmers</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-primary-subtle rounded-circle">
+                                        <i class="ri-user-3-line font-20 text-primary"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ active_farmers }}</h4>
+                                    <p class="text-muted mb-0">Active Farmers</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-success-subtle rounded-circle">
+                                        <i class="ri-checkbox-circle-line font-20 text-success"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ inactive_farmers }}</h4>
+                                    <p class="text-muted mb-0">Inactive Farmers</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-secondary-subtle rounded-circle">
+                                        <i class="ri-close-circle-line font-20 text-secondary"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Recent Farmers -->
+                <div class="col-xl-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Recent Registered Farmers</h4>
+                            <div class="table-responsive">
+                                <table class="table table-nowrap table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>State</th>
+                                            <th>Date Registered</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for farmer in recent_farmers %}
+                                        <tr>
+                                            <td><strong>#{{ farmer.farmer_id }}</strong></td>
+                                            <td>{{ farmer.get_full_name }}</td>
+                                            <td>{{ farmer.phone }}</td>
+                                            <td>{{ farmer.state.name|default:"-" }}</td>
+                                            <td>{{ farmer.date_registered|date:"M d, Y" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-4">
+                                                No farmers registered yet. <a href="{% url 'vendor_farmer_create' %}">Register your first farmer</a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'vendor_farmers_list' %}" class="btn btn-primary">View All Farmers</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Farmers by State -->
+                <div class="col-xl-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Farmers by State</h4>
+                            {% if farmers_by_state %}
+                            <div class="list-group list-group-flush">
+                                {% for item in farmers_by_state %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ item.state__name|default:"Unknown" }}</span>
+                                    <span class="badge bg-primary rounded-pill">{{ item.count }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center py-4">No data available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Quick Actions</h4>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{% url 'vendor_farmer_create' %}" class="btn btn-primary">
+                                    <i class="ri-add-line me-1"></i> Register New Farmer
+                                </a>
+                                <a href="{% url 'vendor_farmers_list' %}" class="btn btn-outline-primary">
+                                    <i class="ri-list-check me-1"></i> View All Farmers
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

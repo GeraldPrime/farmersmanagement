@@ -142,6 +142,12 @@
                                                        class="btn btn-sm btn-warning" title="Edit">
                                                         <i class="ri-pencil-line"></i>
                                                     </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm {% if farmer.farmer_status == 'active' %}btn-secondary{% else %}btn-success{% endif %}" 
+                                                            title="{% if farmer.farmer_status == 'active' %}Deactivate{% else %}Activate{% endif %}"
+                                                            onclick="toggleFarmerStatus({{ farmer.pk }}, '{{ farmer.farmer_status }}')">
+                                                        <i class="ri-{% if farmer.farmer_status == 'active' %}pause{% else %}play{% endif %}-line"></i>
+                                                    </button>
                                                     <a href="{% url 'farmer_delete' farmer.pk %}" 
                                                        class="btn btn-sm btn-danger" title="Delete"
                                                        onclick="return confirm('Are you sure you want to delete this farmer?');">
@@ -168,5 +174,47 @@
         </div>
     </div>
 </div>
+
+<script>
+function toggleFarmerStatus(farmerId, currentStatus) {
+    if (!confirm(`Are you sure you want to ${currentStatus === 'active' ? 'deactivate' : 'activate'} this farmer?`)) {
+        return;
+    }
+    
+    fetch(`/farmers/${farmerId}/toggle-status/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to update farmer status'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating farmer status');
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock content %}
 

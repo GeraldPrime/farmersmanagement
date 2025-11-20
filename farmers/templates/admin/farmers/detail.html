@@ -114,11 +114,11 @@
                                         </h4>
                                         <div class="mb-2">
                                             {% if farmer.farmer_status == 'active' %}
-                                                <span class="badge status-badge px-3 py-2 fs-6">
+                                                <span class="badge status-badge px-3 py-2 fs-6" id="farmer-status-badge-header">
                                                     ACTIVE FARMER
                                                 </span>
                                             {% else %}
-                                                <span class="badge inactive-badge px-3 py-2 fs-6">
+                                                <span class="badge inactive-badge px-3 py-2 fs-6" id="farmer-status-badge-header">
                                                     INACTIVE FARMER
                                                 </span>
                                             {% endif %}
@@ -355,11 +355,20 @@
                                         <div class="row">
                                             <div class="col-md-4 info-label">Status</div>
                                             <div class="col-md-8">
-                                                {% if farmer.farmer_status == 'active' %}
-                                                <span class="status-active">Active Farmer</span>
-                                                {% else %}
-                                                <span class="status-inactive">Inactive Farmer</span>
-                                                {% endif %}
+                                                <div class="d-flex align-items-center gap-2">
+                                                    {% if farmer.farmer_status == 'active' %}
+                                                    <span class="status-active" id="farmer-status-badge">Active Farmer</span>
+                                                    {% else %}
+                                                    <span class="status-inactive" id="farmer-status-badge">Inactive Farmer</span>
+                                                    {% endif %}
+                                                    <button type="button" 
+                                                            class="btn btn-sm {% if farmer.farmer_status == 'active' %}btn-secondary{% else %}btn-success{% endif %}" 
+                                                            title="{% if farmer.farmer_status == 'active' %}Deactivate{% else %}Activate{% endif %}"
+                                                            onclick="toggleFarmerStatus({{ farmer.pk }}, '{{ farmer.farmer_status }}')">
+                                                        <i class="ri-{% if farmer.farmer_status == 'active' %}pause{% else %}play{% endif %}-line me-1"></i>
+                                                        {% if farmer.farmer_status == 'active' %}Deactivate{% else %}Activate{% endif %}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -378,9 +387,9 @@
                                 <div class="text-center mb-4">
                                     <div class="mb-3">
                                         {% if farmer.farmer_status == 'active' %}
-                                        <span class="status-active">Active Farmer</span>
+                                        <span class="status-active" id="farmer-status-badge-sidebar">Active Farmer</span>
                                         {% else %}
-                                        <span class="status-inactive">Inactive Farmer</span>
+                                        <span class="status-inactive" id="farmer-status-badge-sidebar">Inactive Farmer</span>
                                         {% endif %}
                                     </div>
                                     <div class="mt-3">
@@ -390,6 +399,13 @@
                                 </div>
                                 <hr>
                                 <div class="d-grid gap-2">
+                                    <button type="button" 
+                                            class="btn {% if farmer.farmer_status == 'active' %}btn-secondary{% else %}btn-success{% endif %}" 
+                                            title="{% if farmer.farmer_status == 'active' %}Deactivate{% else %}Activate{% endif %}"
+                                            onclick="toggleFarmerStatus({{ farmer.pk }}, '{{ farmer.farmer_status }}')">
+                                        <i class="ri-{% if farmer.farmer_status == 'active' %}pause{% else %}play{% endif %}-line me-1"></i>
+                                        {% if farmer.farmer_status == 'active' %}Deactivate Farmer{% else %}Activate Farmer{% endif %}
+                                    </button>
                                     <a href="{% url 'farmer_edit' farmer.pk %}" class="btn btn-success">
                                         <i class="ri-pencil-line me-1"></i> Edit Farmer
                                     </a>
@@ -405,4 +421,46 @@
             <!-- container -->
         </div>
     </div>
+
+<script>
+function toggleFarmerStatus(farmerId, currentStatus) {
+    if (!confirm(`Are you sure you want to ${currentStatus === 'active' ? 'deactivate' : 'activate'} this farmer?`)) {
+        return;
+    }
+    
+    fetch(`/farmers/${farmerId}/toggle-status/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to update farmer status'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating farmer status');
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock content %}

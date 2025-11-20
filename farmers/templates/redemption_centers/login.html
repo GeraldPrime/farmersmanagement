@@ -1,0 +1,241 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Redemption Center Login | Farmers Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Farmers Management System" name="description" />
+    <meta content="Farmers Management System" name="author" />
+
+    <!-- App css -->
+    <link href="{% static 'assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="app-style" />
+
+    <!-- Icons css -->
+    <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}">
+
+    <!-- Theme Config Js -->
+    <script src="{% static 'assets/js/config.js' %}"></script>
+    
+    <style>
+        .redemption-center-login-bg {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background-image: url("{% static 'assets/images/imageoptions/beautiful-atlantic-landscape.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+            position: relative;
+            min-height: 100vh;
+        }
+        
+        .redemption-center-login-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(240, 147, 251, 0.85) 0%, rgba(245, 87, 108, 0.85) 100%);
+            z-index: 1;
+        }
+        
+        .redemption-center-login-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .redemption-center-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .redemption-center-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .redemption-center-icon-wrapper i {
+            font-size: 30px;
+            color: white;
+        }
+        
+        .login-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .login-card-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .form-control:focus {
+            border-color: #f093fb;
+            box-shadow: 0 0 0 0.2rem rgba(240, 147, 251, 0.25);
+        }
+        
+        .btn-redemption-center {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-redemption-center:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(240, 147, 251, 0.4);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    {% include '_alerts.html' %}
+    
+    <div class="redemption-center-login-bg">
+        <div class="redemption-center-login-content">
+            <div class="container">
+                <div class="row justify-content-center align-items-center min-vh-100">
+                    <div class="col-lg-5 col-md-7">
+                        <!-- Redemption Center Badge -->
+                        <div class="text-center mb-4">
+                            <div class="redemption-center-badge mx-auto">
+                                <i class="ri-building-2-line"></i>
+                                <span>Redemption Center Portal</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Login Card -->
+                        <div class="card login-card">
+                            <div class="login-card-header">
+                                <div class="redemption-center-icon-wrapper">
+                                    <i class="ri-building-2-line"></i>
+                                </div>
+                                <h3 class="mb-2 text-white">Redemption Center Sign In</h3>
+                                <p class="mb-0 text-white-50">Access your redemption center dashboard</p>
+                            </div>
+                            
+                            <div class="card-body p-4">
+                                <form method="post" action="{% url 'redemption_center_login' %}">
+                                    {% csrf_token %}
+                                    
+                                    {% if messages %}
+                                        {% for message in messages %}
+                                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                                <i class="ri-{% if message.tags == 'error' %}error-warning-line{% else %}check-line{% endif %} me-2"></i>
+                                                {{ message }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label fw-semibold">
+                                            <i class="ri-user-line me-1"></i>Username
+                                        </label>
+                                        <input type="text" class="form-control form-control-lg" id="username" name="username" placeholder="Enter your username" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label fw-semibold mb-0" for="password">
+                                                <i class="ri-lock-line me-1"></i>Password
+                                            </label>
+                                            <a href="#" class="text-muted small text-decoration-none">Forgot password?</a>
+                                        </div>
+                                        <div class="position-relative">
+                                            <input type="password" class="form-control form-control-lg pe-5" placeholder="Enter your password" id="password" name="password" required>
+                                            <button class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-decoration-none text-muted" type="button" id="password-addon" style="padding: 0.5rem;">
+                                                <i class="ri-eye-fill align-middle"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <button class="btn btn-redemption-center w-100 btn-lg" type="submit">
+                                            <i class="ri-login-box-line me-2"></i>Sign In to Redemption Center Portal
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="text-center mt-4">
+                                        <p class="text-muted small mb-0">
+                                            <i class="ri-information-line me-1"></i>
+                                            Need help? Contact your administrator
+                                        </p>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Back to Home Link -->
+                        <div class="text-center mt-4">
+                            <a href="{% url 'home' %}" class="text-white text-decoration-none">
+                                <i class="ri-arrow-left-line me-1"></i>Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendor Scripts -->
+    <script src="{% static 'assets/js/vendor.min.js' %}"></script>
+    <script src="{% static 'assets/js/app.min.js' %}"></script>
+
+    <script>
+        // Password toggle functionality
+        document.getElementById('password-addon')?.addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('ri-eye-fill');
+                icon.classList.add('ri-eye-off-fill');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('ri-eye-off-fill');
+                icon.classList.add('ri-eye-fill');
+            }
+        });
+        
+        // Add focus effects
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+    </script>
+</body>
+
+</html>
+

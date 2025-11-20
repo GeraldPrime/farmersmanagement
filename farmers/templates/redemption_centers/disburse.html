@@ -1,0 +1,406 @@
+{% extends "redemption_centers/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Disburse Incentives | Redemption Center Portal{% endblock %}
+
+{% block content %}
+<style>
+    #farmer-picture-container {
+        display: inline-block;
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+        overflow: hidden;
+        border-radius: 50%;
+    }
+    
+    #farmer-picture {
+        width: 150px !important;
+        height: 150px !important;
+        max-width: 150px !important;
+        max-height: 150px !important;
+        min-width: 150px !important;
+        min-height: 150px !important;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid #0d6efd;
+        display: block;
+    }
+    
+    #farmer-picture-placeholder {
+        width: 150px !important;
+        height: 150px !important;
+        max-width: 150px !important;
+        max-height: 150px !important;
+        min-width: 150px !important;
+        min-height: 150px !important;
+        border: 3px solid #0d6efd;
+    }
+</style>
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'redemption_center_dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Disburse Incentives</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Disburse Incentives to Farmers</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-body" style="overflow: hidden;">
+                            <h4 class="header-title mb-3">Farmer Information</h4>
+                            
+                            <!-- NIN Lookup -->
+                            <div class="mb-4">
+                                <label class="form-label">Farmer NIN (National Identification Number) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nin-input" placeholder="Enter farmer's NIN" maxlength="11">
+                                    <button class="btn btn-primary" type="button" id="lookup-btn">
+                                        <i class="ri-search-line me-1"></i>Lookup Farmer
+                                    </button>
+                                </div>
+                                <small class="text-muted">Enter the farmer's 11-digit NIN to retrieve their information</small>
+                                <div id="nin-error" class="text-danger small mt-2" style="display: none;"></div>
+                            </div>
+
+                            <!-- Farmer Details (hidden initially) -->
+                            <div id="farmer-details" style="display: none;">
+                                <hr>
+                                <h5 class="mb-3">Farmer Details</h5>
+                                
+                                <!-- Farmer Picture for Verification -->
+                                <div class="text-center mb-4">
+                                    <div id="farmer-picture-container">
+                                        <img id="farmer-picture" src="" alt="Farmer Photo" 
+                                             class="rounded-circle border border-3 border-primary" 
+                                             style="display: none;">
+                                        <div id="farmer-picture-placeholder" class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border border-3 border-primary">
+                                            <i class="ri-user-line text-muted" style="font-size: 64px;"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mt-2 mb-0">
+                                        <i class="ri-information-line me-1"></i>Verify farmer identity using photo
+                                    </p>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="farmer-name" readonly>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Phone</label>
+                                        <input type="text" class="form-control" id="farmer-phone" readonly>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">State</label>
+                                        <input type="text" class="form-control" id="farmer-state" readonly>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">LGA</label>
+                                        <input type="text" class="form-control" id="farmer-lga" readonly>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">Address</label>
+                                        <textarea class="form-control" id="farmer-address" rows="2" readonly></textarea>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="farmer-id">
+                                <input type="hidden" id="farmer-nin">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disbursement Form -->
+                    <div class="card" id="disbursement-form" style="display: none;">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Disbursement Details</h4>
+                            <form id="disbursement-form-element">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Select Incentive <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="incentive-select" required>
+                                        <option value="">-- Select Incentive --</option>
+                                        {% for item in available_incentives %}
+                                        <option value="{{ item.incentive.incentive_id }}" 
+                                                data-remaining="{{ item.remaining_quantity }}"
+                                                data-name="{{ item.incentive.incentive_name }}">
+                                            {{ item.incentive.incentive_name }} ({{ item.remaining_quantity }} remaining)
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="text-muted" id="incentive-info"></small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="quantity-input" min="1" value="1" required>
+                                    <small class="text-muted">Enter the quantity to disburse</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Notes (Optional)</label>
+                                    <textarea class="form-control" id="notes-input" rows="3" placeholder="Additional notes about this disbursement..."></textarea>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="ri-hand-coin-line me-1"></i>Process Disbursement
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Incentives -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Available Incentives</h4>
+                            {% if available_incentives %}
+                            <div class="list-group list-group-flush">
+                                {% for item in available_incentives %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ item.incentive.incentive_name }}</h6>
+                                            <small class="text-muted">Allocated: {{ item.incentive.quantity|intcomma }}</small>
+                                        </div>
+                                        <span class="badge bg-info">{{ item.remaining_quantity|intcomma }} left</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center py-4">No available incentives</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="mb-3">
+                    <i class="ri-checkbox-circle-line text-success" style="font-size: 64px;"></i>
+                </div>
+                <h4 class="mb-3">Disbursement Successful!</h4>
+                <p class="text-muted mb-4" id="success-message"></p>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="location.reload();">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ninInput = document.getElementById('nin-input');
+        const lookupBtn = document.getElementById('lookup-btn');
+        const farmerDetails = document.getElementById('farmer-details');
+        const disbursementForm = document.getElementById('disbursement-form');
+        const ninError = document.getElementById('nin-error');
+        const incentiveSelect = document.getElementById('incentive-select');
+        const quantityInput = document.getElementById('quantity-input');
+        const incentiveInfo = document.getElementById('incentive-info');
+
+        // NIN lookup
+        lookupBtn.addEventListener('click', function() {
+            const nin = ninInput.value.trim();
+            if (!nin) {
+                ninError.textContent = 'Please enter a NIN';
+                ninError.style.display = 'block';
+                return;
+            }
+
+            if (nin.length !== 11) {
+                ninError.textContent = 'NIN must be 11 digits';
+                ninError.style.display = 'block';
+                return;
+            }
+
+            ninError.style.display = 'none';
+            lookupBtn.disabled = true;
+            lookupBtn.innerHTML = '<i class="ri-loader-4-line me-1 spin"></i>Looking up...';
+
+            fetch('{% url "lookup_farmer_by_nin" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: 'nin=' + encodeURIComponent(nin)
+            })
+            .then(response => response.json())
+            .then(data => {
+                lookupBtn.disabled = false;
+                lookupBtn.innerHTML = '<i class="ri-search-line me-1"></i>Lookup Farmer';
+
+                if (data.error) {
+                    ninError.textContent = data.error;
+                    ninError.style.display = 'block';
+                    farmerDetails.style.display = 'none';
+                    disbursementForm.style.display = 'none';
+                    // Reset farmer picture
+                    document.getElementById('farmer-picture').style.display = 'none';
+                    document.getElementById('farmer-picture-placeholder').style.display = 'flex';
+                    return;
+                }
+
+                if (data.success && data.farmer) {
+                    // Populate farmer details
+                    document.getElementById('farmer-id').value = data.farmer.farmer_id;
+                    document.getElementById('farmer-nin').value = nin;
+                    document.getElementById('farmer-name').value = data.farmer.full_name;
+                    document.getElementById('farmer-phone').value = data.farmer.phone;
+                    document.getElementById('farmer-state').value = data.farmer.state || '-';
+                    document.getElementById('farmer-lga').value = data.farmer.lga || '-';
+                    document.getElementById('farmer-address').value = data.farmer.address || '-';
+
+                    // Handle farmer picture
+                    const farmerPicture = document.getElementById('farmer-picture');
+                    const farmerPicturePlaceholder = document.getElementById('farmer-picture-placeholder');
+                    
+                    if (data.farmer.picture_url) {
+                        farmerPicture.src = data.farmer.picture_url;
+                        farmerPicture.style.display = 'block';
+                        farmerPicturePlaceholder.style.display = 'none';
+                        // Ensure image loads properly and stays within bounds
+                        farmerPicture.onerror = function() {
+                            this.style.display = 'none';
+                            farmerPicturePlaceholder.style.display = 'flex';
+                        };
+                        farmerPicture.onload = function() {
+                            this.style.maxWidth = '150px';
+                            this.style.maxHeight = '150px';
+                        };
+                    } else {
+                        farmerPicture.style.display = 'none';
+                        farmerPicturePlaceholder.style.display = 'flex';
+                    }
+
+                    farmerDetails.style.display = 'block';
+                    disbursementForm.style.display = 'block';
+                    ninError.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                lookupBtn.disabled = false;
+                lookupBtn.innerHTML = '<i class="ri-search-line me-1"></i>Lookup Farmer';
+                ninError.textContent = 'An error occurred. Please try again.';
+                ninError.style.display = 'block';
+            });
+        });
+
+        // Update quantity max based on selected incentive
+        incentiveSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const remaining = parseInt(selectedOption.dataset.remaining) || 0;
+            const name = selectedOption.dataset.name || '';
+
+            if (remaining > 0) {
+                quantityInput.max = remaining;
+                quantityInput.value = Math.min(1, remaining);
+                incentiveInfo.textContent = `Maximum quantity available: ${remaining}`;
+                incentiveInfo.className = 'text-muted';
+            } else {
+                quantityInput.max = 0;
+                quantityInput.value = 0;
+                incentiveInfo.textContent = 'No quantity available for this incentive';
+                incentiveInfo.className = 'text-danger';
+            }
+        });
+
+        // Process disbursement
+        document.getElementById('disbursement-form-element').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const farmerId = document.getElementById('farmer-id').value;
+            const incentiveId = incentiveSelect.value;
+            const quantity = quantityInput.value;
+            const notes = document.getElementById('notes-input').value;
+
+            if (!farmerId || !incentiveId || !quantity) {
+                alert('Please complete all required fields');
+                return;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="ri-loader-4-line me-1 spin"></i>Processing...';
+
+            fetch('{% url "process_disbursement" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `incentive_id=${incentiveId}&farmer_id=${farmerId}&quantity=${quantity}&notes=${encodeURIComponent(notes)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="ri-hand-coin-line me-1"></i>Process Disbursement';
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                if (data.success) {
+                    document.getElementById('success-message').textContent = data.message;
+                    const modal = new bootstrap.Modal(document.getElementById('successModal'));
+                    modal.show();
+                }
+            })
+            .catch(error => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="ri-hand-coin-line me-1"></i>Process Disbursement';
+                alert('An error occurred. Please try again.');
+            });
+        });
+
+        // Allow Enter key to trigger lookup
+        ninInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                lookupBtn.click();
+            }
+        });
+    });
+</script>
+<style>
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock extra_js %}
+

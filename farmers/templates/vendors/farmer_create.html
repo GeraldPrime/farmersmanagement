@@ -1,0 +1,256 @@
+{% extends "vendors/base.html" %}
+{% load static %}
+
+{% block title %}Register New Farmer | Vendor Portal{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'vendor_dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'vendor_farmers_list' %}">My Farmers</a></li>
+                                <li class="breadcrumb-item active">Register Farmer</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">{{ title }}</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- Display form-level errors -->
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Error:</strong>
+                                <ul class="mb-0">
+                                    {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endif %}
+                            
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                
+                                <!-- Personal Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-user-line me-2"></i>Personal Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                            {{ form.firstname }}
+                                            {% if form.firstname.errors %}
+                                            <div class="text-danger small">{{ form.firstname.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Surname <span class="text-danger">*</span></label>
+                                            {{ form.surname }}
+                                            {% if form.surname.errors %}
+                                            <div class="text-danger small">{{ form.surname.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Middle Name</label>
+                                            {{ form.middlename }}
+                                            {% if form.middlename.errors %}
+                                            <div class="text-danger small">{{ form.middlename.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Date of Birth</label>
+                                            {{ form.date_of_birth }}
+                                            {% if form.date_of_birth.errors %}
+                                            <div class="text-danger small">{{ form.date_of_birth.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Gender</label>
+                                            {{ form.gender }}
+                                            {% if form.gender.errors %}
+                                            <div class="text-danger small">{{ form.gender.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Photo <span class="text-danger">*</span></label>
+                                            {{ form.picture }}
+                                            {% if form.picture.errors %}
+                                            <div class="text-danger small">{{ form.picture.errors }}</div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">Please upload a photo of the farmer</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Identification -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-id-card-line me-2"></i>Identification</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">NIN (National Identification Number) <span class="text-danger">*</span></label>
+                                            {{ form.NIN }}
+                                            {% if form.NIN.errors %}
+                                            <div class="text-danger small">{{ form.NIN.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">BVN (Bank Verification Number)</label>
+                                            {{ form.BVN }}
+                                            {% if form.BVN.errors %}
+                                            <div class="text-danger small">{{ form.BVN.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Contact Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-phone-line me-2"></i>Contact Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                            {{ form.phone }}
+                                            {% if form.phone.errors %}
+                                            <div class="text-danger small">{{ form.phone.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Location Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-map-pin-line me-2"></i>Location Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label">State <span class="text-danger">*</span></label>
+                                            {{ form.state }}
+                                            {% if form.state.errors %}
+                                            <div class="text-danger small">{{ form.state.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Local Government Area (LGA) <span class="text-danger">*</span></label>
+                                            {{ form.LGA }}
+                                            {% if form.LGA.errors %}
+                                            <div class="text-danger small">{{ form.LGA.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Ward</label>
+                                            {{ form.ward }}
+                                            {% if form.ward.errors %}
+                                            <div class="text-danger small">{{ form.ward.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Group Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-group-line me-2"></i>Group Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Group Type</label>
+                                            {{ form.group_type }}
+                                            {% if form.group_type.errors %}
+                                            <div class="text-danger small">{{ form.group_type.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Group Name</label>
+                                            {{ form.group_name }}
+                                            {% if form.group_name.errors %}
+                                            <div class="text-danger small">{{ form.group_name.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Agricultural Information -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3"><i class="ri-plant-line me-2"></i>Agricultural Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Crop</label>
+                                            {{ form.crop }}
+                                            {% if form.crop.errors %}
+                                            <div class="text-danger small">{{ form.crop.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Status</label>
+                                            {{ form.farmer_status }}
+                                            {% if form.farmer_status.errors %}
+                                            <div class="text-danger small">{{ form.farmer_status.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a href="{% url 'vendor_farmers_list' %}" class="btn btn-secondary">
+                                        <i class="ri-arrow-left-line me-1"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-save-line me-1"></i> Register Farmer
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// State/LGA dropdown functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const stateSelect = document.getElementById('id_state');
+    const lgaSelect = document.getElementById('id_LGA');
+    
+    if (stateSelect && lgaSelect) {
+        stateSelect.addEventListener('change', function() {
+            const stateId = this.value;
+            lgaSelect.innerHTML = '<option value="">Loading...</option>';
+            
+            if (stateId) {
+                fetch(`/api/lgas/?state_id=${stateId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+                        data.lgas.forEach(lga => {
+                            const option = document.createElement('option');
+                            option.value = lga.id;
+                            option.textContent = lga.name;
+                            lgaSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        lgaSelect.innerHTML = '<option value="">Error loading LGAs</option>';
+                    });
+            } else {
+                lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+            }
+        });
+    }
+});
+</script>
+{% endblock content %}
+

@@ -1,0 +1,268 @@
+{% extends "redemption_centers/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Dashboard | Redemption Center Portal{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item active">Dashboard</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Welcome, {{ redemption_center.fullname }}</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <!-- Statistics Cards -->
+            <div class="row">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ total_allocations }}</h4>
+                                    <p class="text-muted mb-0">Total Allocations</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-primary-subtle rounded-circle">
+                                        <i class="ri-file-list-3-line font-20 text-primary"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ total_items_allocated|intcomma }}</h4>
+                                    <p class="text-muted mb-0">Items Allocated</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-info-subtle rounded-circle">
+                                        <i class="ri-stack-line font-20 text-info"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ total_items_disbursed|intcomma }}</h4>
+                                    <p class="text-muted mb-0">Items Disbursed</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-success-subtle rounded-circle">
+                                        <i class="ri-hand-coin-line font-20 text-success"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-0">{{ total_items_remaining|intcomma }}</h4>
+                                    <p class="text-muted mb-0">Items Remaining</p>
+                                </div>
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-warning-subtle rounded-circle">
+                                        <i class="ri-inbox-line font-20 text-warning"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Recent Allocations -->
+                <div class="col-xl-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Recent Allocations</h4>
+                            <div class="table-responsive">
+                                <table class="table table-nowrap table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Incentive Name</th>
+                                            <th>Quantity</th>
+                                            <th>Date Sent</th>
+                                            <th>Remaining</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for allocation in recent_allocations %}
+                                        <tr>
+                                            <td><strong>{{ allocation.incentive_name }}</strong></td>
+                                            <td>{{ allocation.quantity|intcomma }}</td>
+                                            <td>{{ allocation.date_sent|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% with remaining=allocation.get_remaining_quantity %}
+                                                    <span class="badge bg-{% if remaining > 0 %}info{% else %}secondary{% endif %}">
+                                                        {{ remaining|intcomma }}
+                                                    </span>
+                                                {% endwith %}
+                                            </td>
+                                            <td>
+                                                {% with remaining=allocation.get_remaining_quantity %}
+                                                    {% if remaining > 0 %}
+                                                        <span class="badge bg-success">Available</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Depleted</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-4">
+                                                No allocations received yet.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'redemption_center_allocations' %}" class="btn btn-primary">View All Allocations</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Disbursements -->
+                <div class="col-xl-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Recent Disbursements</h4>
+                            {% if recent_disbursements %}
+                            <div class="list-group list-group-flush">
+                                {% for disbursement in recent_disbursements %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ disbursement.farmer.get_full_name }}</h6>
+                                            <p class="mb-1 text-muted small">{{ disbursement.incentive.incentive_name }}</p>
+                                            <small class="text-muted">{{ disbursement.disbursement_date|date:"M d, Y H:i" }}</small>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">{{ disbursement.quantity }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center py-4">No disbursements yet</p>
+                            {% endif %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'redemption_center_disbursements' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Current Inventory</h4>
+                            {% if inventory %}
+                            <div class="table-responsive">
+                                <table class="table table-nowrap table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Incentive Name</th>
+                                            <th>Total Allocated</th>
+                                            <th>Disbursed</th>
+                                            <th>Remaining</th>
+                                            <th>Progress</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in inventory %}
+                                        <tr>
+                                            <td><strong>{{ item.incentive.incentive_name }}</strong></td>
+                                            <td>{{ item.total_quantity|intcomma }}</td>
+                                            <td>{{ item.disbursed_quantity|intcomma }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if item.remaining_quantity > 0 %}info{% else %}secondary{% endif %}">
+                                                    {{ item.remaining_quantity|intcomma }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-{% if item.percentage_remaining > 50 %}success{% elif item.percentage_remaining > 25 %}warning{% else %}danger{% endif %}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ item.percentage_remaining }}%"
+                                                         aria-valuenow="{{ item.percentage_remaining }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">{{ item.percentage_remaining|floatformat:1 }}% remaining</small>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center py-4">No inventory available. Allocations will appear here once received.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Quick Actions</h4>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{% url 'redemption_center_disburse' %}" class="btn btn-primary">
+                                    <i class="ri-hand-coin-line me-1"></i> Disburse Incentives
+                                </a>
+                                <a href="{% url 'redemption_center_allocations' %}" class="btn btn-outline-primary">
+                                    <i class="ri-file-list-3-line me-1"></i> View All Allocations
+                                </a>
+                                <a href="{% url 'redemption_center_disbursements' %}" class="btn btn-outline-primary">
+                                    <i class="ri-history-line me-1"></i> View Disbursements History
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

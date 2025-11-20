@@ -1,0 +1,143 @@
+{% extends "redemption_centers/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Profile | Redemption Center Portal{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'redemption_center_dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Profile</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Redemption Center Profile</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <!-- Profile Information -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Center Information</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted">Center Name</label>
+                                    <p class="mb-0"><strong>{{ redemption_center.fullname }}</strong></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted">Center ID</label>
+                                    <p class="mb-0"><strong>#{{ redemption_center.redemption_center_id }}</strong></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted">Email Address</label>
+                                    <p class="mb-0">{{ redemption_center.email }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted">Phone Number</label>
+                                    <p class="mb-0">{{ redemption_center.phone_no }}</p>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label text-muted">Address</label>
+                                    <p class="mb-0">{{ redemption_center.redemption_center_address }}</p>
+                                </div>
+                                {% if redemption_center.description %}
+                                <div class="col-12 mb-3">
+                                    <label class="form-label text-muted">Description</label>
+                                    <p class="mb-0">{{ redemption_center.description }}</p>
+                                </div>
+                                {% endif %}
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted">Status</label>
+                                    <p class="mb-0">
+                                        <span class="badge bg-{% if redemption_center.redemption_center_status == 'active' %}success{% else %}secondary{% endif %}">
+                                            {{ redemption_center.get_redemption_center_status_display }}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted">Date Created</label>
+                                    <p class="mb-0">{{ redemption_center.created_at|date:"M d, Y" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Statistics</h4>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Total Allocations</span>
+                                    <strong>{{ total_allocations|intcomma }}</strong>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-primary" style="width: 100%"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Total Disbursements</span>
+                                    <strong>{{ total_disbursements|intcomma }}</strong>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success" style="width: 100%"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Farmers Served</span>
+                                    <strong>{{ total_farmers_served|intcomma }}</strong>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-info" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Information -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Account Information</h4>
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Username</label>
+                                <p class="mb-0"><strong>{{ request.user.username }}</strong></p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Email</label>
+                                <p class="mb-0">{{ request.user.email|default:"-" }}</p>
+                            </div>
+                            
+                            <div class="mb-0">
+                                <label class="form-label text-muted">Last Login</label>
+                                <p class="mb-0">{{ request.user.last_login|date:"M d, Y H:i"|default:"Never" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

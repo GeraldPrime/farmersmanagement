@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 from .models import Farmer, Group, GroupType, Vendor, RedemptionCenter, State, LGA, Incentive
 
 
@@ -241,7 +242,7 @@ class RedemptionCenterForm(forms.ModelForm):
     
     class Meta:
         model = RedemptionCenter
-        fields = ['fullname', 'redemption_center_address', 'phone_no', 'email', 'description']
+        fields = ['fullname', 'redemption_center_address', 'phone_no', 'email', 'description', 'redemption_center_status']
         widgets = {
             'fullname': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -264,6 +265,9 @@ class RedemptionCenterForm(forms.ModelForm):
                 'class': 'form-control',
                 'rows': 4,
                 'placeholder': 'Enter description of the redemption center (optional)'
+            }),
+            'redemption_center_status': forms.Select(attrs={
+                'class': 'form-select',
             }),
         }
 
@@ -300,6 +304,25 @@ class IncentiveForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set queryset for redemption_center
-        self.fields['redemption_center'].queryset = RedemptionCenter.objects.all().order_by('fullname')
+        # Set queryset for redemption_center - only show active centers
+        self.fields['redemption_center'].queryset = RedemptionCenter.objects.filter(
+            redemption_center_status='active'
+        ).order_by('fullname')
+        
+        # If editing an existing incentive with an inactive center, include it in queryset
+        if self.instance and self.instance.pk and self.instance.redemption_center:
+            if self.instance.redemption_center.redemption_center_status != 'active':
+                self.fields['redemption_center'].queryset = RedemptionCenter.objects.filter(
+                    Q(redemption_center_status='active') | Q(pk=self.instance.redemption_center.pk)
+                ).order_by('fullname')
+    
+    def clean_redemption_center(self):
+        """Validate that the redemption center is active"""
+        redemption_center = self.cleaned_data.get('redemption_center')
+        if redemption_center and redemption_center.redemption_center_status != 'active':
+            raise forms.ValidationError(
+                f'Cannot assign incentive to inactive redemption center "{redemption_center.fullname}". '
+                'Please select an active redemption center.'
+            )
+        return redemption_center
 

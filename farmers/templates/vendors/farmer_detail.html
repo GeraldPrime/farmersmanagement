@@ -1,0 +1,196 @@
+{% extends "vendors/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Farmer Details | Vendor Portal{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'vendor_dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'vendor_farmers_list' %}">My Farmers</a></li>
+                                <li class="breadcrumb-item active">Farmer Details</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Farmer Details</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card profile-card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 text-center mb-4 mb-md-0">
+                                    {% if farmer.picture %}
+                                    <img src="{{ farmer.picture.url }}" alt="{{ farmer.get_full_name }}" 
+                                         class="img-thumbnail rounded-circle" style="width: 200px; height: 200px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="bg-primary-subtle rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                         style="width: 200px; height: 200px;">
+                                        <i class="ri-user-line text-primary" style="font-size: 80px;"></i>
+                                    </div>
+                                    {% endif %}
+                                    <h4 class="mt-3 mb-1">{{ farmer.get_full_name }}</h4>
+                                    <p class="text-muted">Farmer ID: #{{ farmer.farmer_id }}</p>
+                                    {% if farmer.farmer_status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-9">
+                                    <!-- Personal Information -->
+                                    <div class="info-section">
+                                        <h6><i class="ri-user-line me-2"></i>Personal Information</h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <strong>Full Name:</strong><br>
+                                                {{ farmer.get_full_name }}
+                                            </div>
+                                            {% if farmer.date_of_birth %}
+                                            <div class="col-md-6 mb-3">
+                                                <strong>Date of Birth:</strong><br>
+                                                {{ farmer.date_of_birth|date:"F d, Y" }}
+                                            </div>
+                                            {% endif %}
+                                            {% if farmer.gender %}
+                                            <div class="col-md-6 mb-3">
+                                                <strong>Gender:</strong><br>
+                                                {{ farmer.get_gender_display }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Identification -->
+                                    <div class="info-section">
+                                        <h6><i class="ri-id-card-line me-2"></i>Identification</h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <strong>NIN:</strong><br>
+                                                {{ farmer.NIN }}
+                                            </div>
+                                            {% if farmer.BVN %}
+                                            <div class="col-md-6 mb-3">
+                                                <strong>BVN:</strong><br>
+                                                {{ farmer.BVN }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Contact Information -->
+                                    <div class="info-section">
+                                        <h6><i class="ri-phone-line me-2"></i>Contact Information</h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <strong>Phone:</strong><br>
+                                                <a href="tel:{{ farmer.phone }}">{{ farmer.phone }}</a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Location Information -->
+                                    <div class="info-section">
+                                        <h6><i class="ri-map-pin-line me-2"></i>Location Information</h6>
+                                        <div class="row">
+                                            {% if farmer.state %}
+                                            <div class="col-md-4 mb-3">
+                                                <strong>State:</strong><br>
+                                                {{ farmer.state.name }}
+                                            </div>
+                                            {% endif %}
+                                            {% if farmer.LGA %}
+                                            <div class="col-md-4 mb-3">
+                                                <strong>LGA:</strong><br>
+                                                {{ farmer.LGA.name }}
+                                            </div>
+                                            {% endif %}
+                                            {% if farmer.ward %}
+                                            <div class="col-md-4 mb-3">
+                                                <strong>Ward:</strong><br>
+                                                {{ farmer.ward }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Group Information -->
+                                    {% if farmer.group_type or farmer.group_name %}
+                                    <div class="info-section">
+                                        <h6><i class="ri-group-line me-2"></i>Group Information</h6>
+                                        <div class="row">
+                                            {% if farmer.group_type %}
+                                            <div class="col-md-6 mb-3">
+                                                <strong>Group Type:</strong><br>
+                                                {{ farmer.group_type.name }}
+                                            </div>
+                                            {% endif %}
+                                            {% if farmer.group_name %}
+                                            <div class="col-md-6 mb-3">
+                                                <strong>Group Name:</strong><br>
+                                                {{ farmer.group_name.group_name }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Agricultural Information -->
+                                    {% if farmer.crop %}
+                                    <div class="info-section">
+                                        <h6><i class="ri-plant-line me-2"></i>Agricultural Information</h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <strong>Crop:</strong><br>
+                                                {{ farmer.crop }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Registration Information -->
+                                    <div class="info-section">
+                                        <h6><i class="ri-file-list-line me-2"></i>Registration Information</h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <strong>Date Registered:</strong><br>
+                                                {{ farmer.date_registered|date:"F d, Y H:i" }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <strong>Status:</strong><br>
+                                                {% if farmer.farmer_status == 'active' %}
+                                                <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Inactive</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <a href="{% url 'vendor_farmers_list' %}" class="btn btn-secondary">
+                                    <i class="ri-arrow-left-line me-1"></i> Back to List
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

@@ -1,0 +1,161 @@
+{% extends "vendors/base.html" %}
+{% load static %}
+
+{% block title %}My Farmers | Vendor Portal{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'vendor_dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">My Farmers</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">My Registered Farmers</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="header-title mb-0">All Farmers</h5>
+                                <a href="{% url 'vendor_farmer_create' %}" class="btn btn-primary">
+                                    <i class="ri-add-line me-1"></i> Register New Farmer
+                                </a>
+                            </div>
+
+                            <!-- Search and Filter -->
+                            <form method="get" class="mb-3">
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <input type="text" name="search" class="form-control" 
+                                               placeholder="Search by name, phone, NIN, ID..." 
+                                               value="{{ search_query }}">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <select name="status" class="form-select">
+                                            <option value="">All Status</option>
+                                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <select name="group_type" class="form-select">
+                                            <option value="">All Group Types</option>
+                                            {% for group_type in group_types %}
+                                            <option value="{{ group_type.pk }}" {% if group_type_filter == group_type.pk|stringformat:"s" %}selected{% endif %}>
+                                                {{ group_type.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <select name="group" class="form-select">
+                                            <option value="">All Groups</option>
+                                            {% for group in groups %}
+                                            <option value="{{ group.pk }}" {% if group_filter == group.pk|stringformat:"s" %}selected{% endif %}>
+                                                {{ group.group_name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="submit" class="btn btn-info w-100">
+                                            <i class="ri-search-line"></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <a href="{% url 'vendor_farmers_list' %}" class="btn btn-secondary w-100">
+                                            <i class="ri-refresh-line"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div class="table-responsive">
+                                <table class="table table-nowrap table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Picture</th>
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>State</th>
+                                            <th>Group</th>
+                                            <th>Status</th>
+                                            <th>Date Registered</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for farmer in farmers %}
+                                        <tr>
+                                            <td><strong>#{{ farmer.farmer_id }}</strong></td>
+                                            <td>
+                                                {% if farmer.picture %}
+                                                <img src="{{ farmer.picture.url }}" alt="{{ farmer.get_full_name }}" 
+                                                     class="rounded-circle avatar-sm">
+                                                {% else %}
+                                                <div class="avatar-sm bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center">
+                                                    <i class="ri-user-line text-primary"></i>
+                                                </div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <strong>{{ farmer.get_full_name }}</strong>
+                                                {% if farmer.middlename %}<br><small class="text-muted">{{ farmer.middlename }}</small>{% endif %}
+                                            </td>
+                                            <td>{{ farmer.phone }}</td>
+                                            <td>{{ farmer.state.name|default:"-" }}</td>
+                                            <td>
+                                                {% if farmer.group_name %}
+                                                <span class="badge bg-info-subtle text-info">{{ farmer.group_name.group_name }}</span>
+                                                {% else %}
+                                                <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if farmer.farmer_status == 'active' %}
+                                                <span class="badge bg-success-subtle text-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ farmer.date_registered|date:"M d, Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'vendor_farmer_detail' farmer.pk %}" 
+                                                   class="btn btn-sm btn-info" title="View">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted py-4">
+                                                <i class="ri-inbox-line fs-48 text-muted d-block mb-2"></i>
+                                                No farmers found. <a href="{% url 'vendor_farmer_create' %}">Register your first farmer</a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

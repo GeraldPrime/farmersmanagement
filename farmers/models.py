@@ -1,7 +1,9 @@
 from django.db import models
+from django.db.models import Sum
 from django.urls import reverse
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from django.contrib.auth.models import User
 from datetime import date
 import random
 
@@ -277,6 +279,14 @@ class Vendor(models.Model):
         default='active',
         help_text="Current status of the vendor"
     )
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='vendor_profile',
+        help_text="Django User account for vendor login credentials"
+    )
     date_registered = models.DateTimeField(auto_now_add=True, help_text="Date and time when vendor was registered")
 
     class Meta:
@@ -320,6 +330,11 @@ class RedemptionCenter(models.Model):
     """
     Model to store redemption center information.
     """
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+    ]
+    
     redemption_center_id = models.AutoField(primary_key=True, verbose_name="Redemption Center ID")
     fullname = models.CharField(max_length=200, help_text="Full name of the redemption center")
     redemption_center_address = models.TextField(help_text="Complete address of the redemption center")
@@ -330,6 +345,20 @@ class RedemptionCenter(models.Model):
     )
     email = models.EmailField(unique=True, help_text="Email address of the redemption center")
     description = models.TextField(blank=True, help_text="Description of the redemption center (optional)")
+    redemption_center_status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='active',
+        help_text="Current status of the redemption center"
+    )
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='redemption_center_profile',
+        help_text="Django User account for redemption center login credentials"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -340,6 +369,7 @@ class RedemptionCenter(models.Model):
         indexes = [
             models.Index(fields=['fullname']),
             models.Index(fields=['email']),
+            models.Index(fields=['redemption_center_status']),
         ]
 
     def __str__(self):
@@ -384,3 +414,82 @@ class Incentive(models.Model):
 
     def get_absolute_url(self):
         return reverse('admin:farmers_incentive_change', args=[self.pk])
+    
+    def get_remaining_quantity(self):
+        """Calculate remaining quantity after disbursements"""
+        total_disbursed = self.disbursements.aggregate(
+            total=Sum('quantity')
+        )['total'] or 0
+        return max(0, self.quantity - total_disbursed)
+    
+    def get_disbursed_quantity(self):
+        """Calculate total quantity disbursed"""
+        return self.disbursements.aggregate(
+            total=Sum('quantity')
+        )['total'] or 0
+
+
+class Disbursement(models.Model):
+    """
+    Model to track disbursement of incentives to farmers by redemption centers.
+    Prevents duplicate disbursements of the same incentive to the same farmer.
+    """
+    disbursement_id = models.AutoField(primary_key=True, verbose_name="Disbursement ID")
+    incentive = models.ForeignKey(
+        'Incentive',
+        on_delete=models.CASCADE,
+        related_name='disbursements',
+        help_text="Incentive being disbursed"
+    )
+    farmer = models.ForeignKey(
+        'Farmer',
+        on_delete=models.CASCADE,
+        related_name='disbursements',
+        help_text="Farmer receiving the incentive"
+    )
+    quantity = models.PositiveIntegerField(
+        default=1,
+        help_text="Quantity of incentive disbursed to the farmer"
+    )
+    redemption_center = models.ForeignKey(
+        'RedemptionCenter',
+        on_delete=models.CASCADE,
+        related_name='disbursements',
+        help_text="Redemption center that disbursed this incentive"
+    )
+    disbursed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='disbursements_made',
+        help_text="User who processed this disbursement"
+    )
+    disbursement_date = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Date and time when the disbursement was made"
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="Additional notes about this disbursement (optional)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Disbursement"
+        verbose_name_plural = "Disbursements"
+        ordering = ['-disbursement_date']
+        indexes = [
+            models.Index(fields=['incentive', 'farmer']),
+            models.Index(fields=['redemption_center', 'disbursement_date']),
+            models.Index(fields=['farmer', 'disbursement_date']),
+        ]
+        # Ensure a farmer cannot receive the same incentive from the same allocation twice
+        unique_together = ['incentive', 'farmer']
+
+    def __str__(self):
+        return f"{self.farmer.get_full_name()} - {self.incentive.incentive_name} ({self.quantity} units)"
+
+    def get_absolute_url(self):
+        return reverse('redemption_center:disbursements')

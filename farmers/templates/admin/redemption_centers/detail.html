@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% load humanize %}
+{% load static %}
 
 {% block content %}
+<meta name="csrf-token" content="{{ csrf_token }}">
     <style>
         .center-header-card {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
@@ -124,6 +126,19 @@
                                 </div>
                                 <div class="col-md-4 text-end">
                                     <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                        <button type="button" 
+                                                class="btn {% if center.redemption_center_status == 'active' %}btn-warning{% else %}btn-success{% endif %}" 
+                                                title="Toggle Status"
+                                                onclick="toggleRedemptionCenterStatus({{ center.pk }}, '{{ center.redemption_center_status }}')">
+                                            <i class="ri-{% if center.redemption_center_status == 'active' %}pause{% else %}play{% endif %}-line me-1"></i>
+                                            {% if center.redemption_center_status == 'active' %}Deactivate{% else %}Activate{% endif %}
+                                        </button>
+                                        <button type="button" 
+                                                class="btn btn-info" 
+                                                title="Manage Credentials"
+                                                onclick="openCredentialsModal({{ center.pk }}, '{{ center.fullname }}')">
+                                            <i class="ri-key-line me-1"></i> Credentials
+                                        </button>
                                         <a href="{% url 'redemption_center_edit' center.pk %}" class="btn btn-light">
                                             <i class="ri-pencil-line me-1"></i> Edit
                                         </a>
@@ -207,6 +222,18 @@
                                     <h6><i class="ri-file-list-line me-2"></i>Registration Information</h6>
                                     <div class="info-row">
                                         <div class="row">
+                                            <div class="col-md-4 info-label">Status</div>
+                                            <div class="col-md-8">
+                                                {% if center.redemption_center_status == 'active' %}
+                                                <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Inactive</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="row">
                                             <div class="col-md-4 info-label">Date Created</div>
                                             <div class="col-md-8 info-value">{{ center.created_at|date:"F d, Y H:i" }}</div>
                                         </div>
@@ -240,6 +267,19 @@
                                 </div>
                                 <hr>
                                 <div class="d-grid gap-2">
+                                    <button type="button" 
+                                            class="btn {% if center.redemption_center_status == 'active' %}btn-warning{% else %}btn-success{% endif %}" 
+                                            title="Toggle Status"
+                                            onclick="toggleRedemptionCenterStatus({{ center.pk }}, '{{ center.redemption_center_status }}')">
+                                        <i class="ri-{% if center.redemption_center_status == 'active' %}pause{% else %}play{% endif %}-line me-1"></i>
+                                        {% if center.redemption_center_status == 'active' %}Deactivate Center{% else %}Activate Center{% endif %}
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-info" 
+                                            title="Manage Credentials"
+                                            onclick="openCredentialsModal({{ center.pk }}, '{{ center.fullname }}')">
+                                        <i class="ri-key-line me-1"></i> Manage Credentials
+                                    </button>
                                     <a href="{% url 'redemption_center_edit' center.pk %}" class="btn btn-success">
                                         <i class="ri-pencil-line me-1"></i> Edit Center
                                     </a>
@@ -251,7 +291,458 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Incentive Allocations Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card center-info-card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="header-title mb-0">
+                                        <i class="ri-file-list-3-line me-2 text-success"></i>Incentive Allocations
+                                    </h5>
+                                    <div>
+                                        <span class="badge bg-primary me-2">{{ total_allocations|intcomma }} allocation(s)</span>
+                                        <span class="badge bg-info">{{ total_items_allocated|intcomma }} items allocated</span>
+                                    </div>
+                                </div>
+                                
+                                {% if incentives %}
+                                <div class="table-responsive">
+                                    <table class="table table-nowrap table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Incentive Name</th>
+                                                <th>Description</th>
+                                                <th>Quantity</th>
+                                                <th>Disbursed</th>
+                                                <th>Remaining</th>
+                                                <th>Date Sent</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in incentives %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ item.incentive.incentive_name }}</strong>
+                                                </td>
+                                                <td>
+                                                    {% if item.incentive.description %}
+                                                        <small class="text-muted">{{ item.incentive.description|truncatewords:10 }}</small>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ item.total_quantity|intcomma }} units</span>
+                                                </td>
+                                                <td>{{ item.disbursed_quantity|intcomma }}</td>
+                                                <td>
+                                                    <span class="badge bg-{% if item.remaining_quantity > 0 %}info{% else %}secondary{% endif %}">
+                                                        {{ item.remaining_quantity|intcomma }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ item.incentive.date_sent|date:"M d, Y" }}</td>
+                                                <td>
+                                                    {% if item.remaining_quantity > 0 %}
+                                                        <span class="badge bg-success">Available</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Depleted</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'incentive_detail' item.incentive.incentive_id %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="ri-eye-line"></i> View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'incentives_list' %}?center={{ center.redemption_center_id }}" class="btn btn-outline-primary">
+                                        <i class="ri-list-check me-1"></i>View All Allocations
+                                    </a>
+                                </div>
+                                {% else %}
+                                <p class="text-muted text-center py-4">No incentive allocations have been made to this center yet.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card center-info-card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="header-title mb-0">
+                                        <i class="ri-inbox-line me-2 text-success"></i>Current Inventory
+                                    </h5>
+                                    <span class="badge bg-info">{{ inventory|length }} item(s)</span>
+                                </div>
+                                
+                                {% if inventory %}
+                                <div class="table-responsive">
+                                    <table class="table table-nowrap table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Incentive Name</th>
+                                                <th>Total Allocated</th>
+                                                <th>Disbursed</th>
+                                                <th>Remaining</th>
+                                                <th>Progress</th>
+                                                <th>Date Sent</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in inventory %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ item.incentive.incentive_name }}</strong>
+                                                    {% if item.incentive.description %}
+                                                    <br><small class="text-muted">{{ item.incentive.description|truncatewords:10 }}</small>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ item.total_quantity|intcomma }}</td>
+                                                <td>{{ item.disbursed_quantity|intcomma }}</td>
+                                                <td>
+                                                    <span class="badge bg-{% if item.remaining_quantity > 0 %}info{% else %}secondary{% endif %}">
+                                                        {{ item.remaining_quantity|intcomma }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="progress" style="height: 8px; width: 100px;">
+                                                        <div class="progress-bar bg-{% if item.percentage_remaining > 50 %}success{% elif item.percentage_remaining > 25 %}warning{% else %}danger{% endif %}" 
+                                                             role="progressbar" 
+                                                             style="width: {{ item.percentage_remaining }}%"
+                                                             aria-valuenow="{{ item.percentage_remaining }}" 
+                                                             aria-valuemin="0" 
+                                                             aria-valuemax="100">
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">{{ item.percentage_remaining|floatformat:1 }}%</small>
+                                                </td>
+                                                <td>{{ item.incentive.date_sent|date:"M d, Y" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted text-center py-4">No inventory available. No incentives have been allocated to this center yet.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disbursements Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card center-info-card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="header-title mb-0">
+                                        <i class="ri-hand-coin-line me-2 text-success"></i>Recent Disbursements
+                                    </h5>
+                                    <div>
+                                        <span class="badge bg-primary me-2">{{ total_disbursements|intcomma }} total</span>
+                                        <span class="badge bg-success me-2">{{ total_items_disbursed|intcomma }} items</span>
+                                        <span class="badge bg-info">{{ total_farmers_served|intcomma }} farmers</span>
+                                    </div>
+                                </div>
+                                
+                                {% if disbursements %}
+                                <div class="table-responsive">
+                                    <table class="table table-nowrap table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Date & Time</th>
+                                                <th>Farmer</th>
+                                                <th>NIN</th>
+                                                <th>Incentive</th>
+                                                <th>Quantity</th>
+                                                <th>Disbursed By</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for disbursement in disbursements %}
+                                            <tr>
+                                                <td>{{ disbursement.disbursement_date|date:"M d, Y H:i" }}</td>
+                                                <td>
+                                                    <strong>{{ disbursement.farmer.get_full_name }}</strong>
+                                                    <br><small class="text-muted">{{ disbursement.farmer.phone }}</small>
+                                                </td>
+                                                <td><code>{{ disbursement.farmer.NIN }}</code></td>
+                                                <td>
+                                                    <a href="{% url 'incentive_detail' disbursement.incentive.incentive_id %}">
+                                                        {{ disbursement.incentive.incentive_name }}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ disbursement.quantity|intcomma }} units</span>
+                                                </td>
+                                                <td>
+                                                    {% if disbursement.disbursed_by %}
+                                                        {{ disbursement.disbursed_by.username }}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if disbursement.notes %}
+                                                        <small class="text-muted" title="{{ disbursement.notes }}">
+                                                            {{ disbursement.notes|truncatewords:5 }}
+                                                        </small>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'disbursements_list' %}?center={{ center.redemption_center_id }}" class="btn btn-outline-primary">
+                                        <i class="ri-eye-line me-1"></i>View All Disbursements
+                                    </a>
+                                </div>
+                                {% else %}
+                                <p class="text-muted text-center py-4">No disbursements have been made by this center yet.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+<!-- Credentials Modal -->
+<div class="modal fade" id="credentialsModal" tabindex="-1" aria-labelledby="credentialsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="credentialsModalLabel">Manage Redemption Center Credentials</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="credentialsForm">
+                    <input type="hidden" id="centerId" name="center_id">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <small class="form-text text-muted">Suggested username based on redemption center name</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <button type="button" class="btn btn-outline-secondary" id="togglePassword" onclick="togglePasswordVisibility()" title="Show/Hide Password">
+                                <i class="ri-eye-line" id="passwordToggleIcon"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="generateRandomPassword()">
+                                <i class="ri-refresh-line"></i> Generate
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">Admin can set any password without restrictions</small>
+                    </div>
+                    <div id="credentialsError" class="alert alert-danger d-none" role="alert"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveCredentials()">Save Credentials</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentCenterId = null;
+
+function toggleRedemptionCenterStatus(centerId, currentStatus) {
+    if (!confirm(`Are you sure you want to ${currentStatus === 'active' ? 'deactivate' : 'activate'} this redemption center?`)) {
+        return;
+    }
+    
+    fetch(`/redemption-centers/${centerId}/toggle-status/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to update status'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating redemption center status');
+    });
+}
+
+function openCredentialsModal(centerId, fullname) {
+    currentCenterId = centerId;
+    const modal = new bootstrap.Modal(document.getElementById('credentialsModal'));
+    const form = document.getElementById('credentialsForm');
+    const errorDiv = document.getElementById('credentialsError');
+    
+    // Reset form
+    form.reset();
+    errorDiv.classList.add('d-none');
+    errorDiv.textContent = '';
+    
+    // Generate suggested username from fullname
+    const suggestedUsername = fullname.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+    
+    // Fetch current credentials
+    fetch(`/redemption-centers/${centerId}/credentials/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('centerId').value = centerId;
+                // Use existing username if available, otherwise use suggested
+                document.getElementById('username').value = data.username || data.suggested_username;
+                document.getElementById('password').value = '';
+                
+                // Update modal title
+                document.getElementById('credentialsModalLabel').textContent = 
+                    data.has_credentials ? 'Edit Redemption Center Credentials' : 'Create Redemption Center Credentials';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Still show modal with suggested username even if fetch fails
+            document.getElementById('centerId').value = centerId;
+            document.getElementById('username').value = suggestedUsername;
+            alert('An error occurred while loading credentials');
+        });
+    
+    modal.show();
+}
+
+function generateRandomPassword() {
+    fetch('/api/generate-password/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const passwordInput = document.getElementById('password');
+                passwordInput.value = data.password;
+                // Show the password when generated
+                passwordInput.type = 'text';
+                const toggleIcon = document.getElementById('passwordToggleIcon');
+                if (toggleIcon) {
+                    toggleIcon.classList.remove('ri-eye-line');
+                    toggleIcon.classList.add('ri-eye-off-line');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while generating password');
+        });
+}
+
+function saveCredentials() {
+    const form = document.getElementById('credentialsForm');
+    const formData = new FormData(form);
+    const errorDiv = document.getElementById('credentialsError');
+    
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    
+    if (!username || !password) {
+        errorDiv.textContent = 'Please fill in both username and password';
+        errorDiv.classList.remove('d-none');
+        return;
+    }
+    
+    // Show confirmation dialog
+    if (!confirm('Are you sure you want to save these credentials? This will create or update the redemption center\'s login account.')) {
+        return;
+    }
+    
+    // Prepare form data
+    const data = new FormData();
+    data.append('username', username);
+    data.append('password', password);
+    // Add CSRF token to form data
+    data.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    
+    fetch(`/redemption-centers/${currentCenterId}/credentials/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: data,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('credentialsModal'));
+            modal.hide();
+            alert('Credentials saved successfully!');
+        } else {
+            errorDiv.textContent = data.error || 'Failed to save credentials';
+            errorDiv.classList.remove('d-none');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        errorDiv.textContent = 'An error occurred while saving credentials';
+        errorDiv.classList.remove('d-none');
+    });
+}
+
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('passwordToggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('ri-eye-line');
+        toggleIcon.classList.add('ri-eye-off-line');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('ri-eye-off-line');
+        toggleIcon.classList.add('ri-eye-line');
+    }
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    // Fallback to meta tag if cookie not found
+    if (!cookieValue) {
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        if (metaTag) {
+            cookieValue = metaTag.getAttribute('content');
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock content %}

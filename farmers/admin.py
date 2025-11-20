@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import GroupType, Group, Vendor, Farmer, RedemptionCenter, State, LGA, Incentive
+from .models import GroupType, Group, Vendor, Farmer, RedemptionCenter, State, LGA, Incentive, Disbursement
 
 
 @admin.register(GroupType)
@@ -271,21 +271,16 @@ class VendorAdmin(admin.ModelAdmin):
                 'vendor_firstname',
                 'vendor_middlename',
                 'vendor_surname',
-                'vendor_company_name'
-            )
-        }),
-        ('Contact Information', {
-            'fields': (
+                'vendor_company_name',
+                'vendor_address',
                 'vendor_email_address',
                 'vendor_phone',
-                'vendor_address'
+                'vendor_status'
             )
         }),
-        ('Status & Registration', {
-            'fields': (
-                'vendor_status',
-                'date_registered'
-            )
+        ('Timestamps', {
+            'fields': ('date_registered',),
+            'classes': ('collapse',)
         }),
     )
     
@@ -309,55 +304,6 @@ class VendorAdmin(admin.ModelAdmin):
         )
     vendor_status_badge.short_description = 'Status'
     vendor_status_badge.admin_order_field = 'vendor_status'
-    
-    def get_queryset(self, request):
-        """Optimize queryset"""
-        qs = super().get_queryset(request)
-        return qs
-    
-    actions = ['make_active', 'make_inactive']
-    
-    def make_active(self, request, queryset):
-        """Action to set selected vendors as active"""
-        updated = queryset.update(vendor_status='active')
-        self.message_user(request, f'{updated} vendor(s) marked as active.')
-    make_active.short_description = 'Mark selected vendors as active'
-    
-    def make_inactive(self, request, queryset):
-        """Action to set selected vendors as inactive"""
-        updated = queryset.update(vendor_status='inactive')
-        self.message_user(request, f'{updated} vendor(s) marked as inactive.')
-    make_inactive.short_description = 'Mark selected vendors as inactive'
-
-
-@admin.register(State)
-class StateAdmin(admin.ModelAdmin):
-    """
-    Admin interface for State model.
-    """
-    list_display = ['name', 'code', 'lgas_count']
-    search_fields = ['name', 'code']
-    readonly_fields = []
-    
-    def lgas_count(self, obj):
-        """Show the number of LGAs in this state"""
-        return obj.lgas.count()
-    lgas_count.short_description = 'LGAs Count'
-
-
-@admin.register(LGA)
-class LGAAdmin(admin.ModelAdmin):
-    """
-    Admin interface for LGA model.
-    """
-    list_display = ['name', 'state', 'farmers_count']
-    list_filter = ['state']
-    search_fields = ['name', 'state__name']
-    
-    def farmers_count(self, obj):
-        """Show the number of farmers in this LGA"""
-        return obj.farmers.count()
-    farmers_count.short_description = 'Farmers Count'
 
 
 @admin.register(RedemptionCenter)
@@ -368,18 +314,19 @@ class RedemptionCenterAdmin(admin.ModelAdmin):
     list_display = [
         'redemption_center_id',
         'fullname',
-        'phone_no',
         'email',
-        'address_preview',
+        'phone_no',
+        'redemption_center_status_badge',
         'created_at'
     ]
-    list_filter = ['created_at']
+    list_filter = ['redemption_center_status', 'created_at']
     search_fields = [
         'redemption_center_id',
         'fullname',
         'email',
         'phone_no',
-        'redemption_center_address'
+        'redemption_center_address',
+        'description'
     ]
     readonly_fields = ['redemption_center_id', 'created_at', 'updated_at']
     list_per_page = 25
@@ -390,13 +337,10 @@ class RedemptionCenterAdmin(admin.ModelAdmin):
                 'redemption_center_id',
                 'fullname',
                 'redemption_center_address',
-                'description'
-            )
-        }),
-        ('Contact Information', {
-            'fields': (
                 'phone_no',
-                'email'
+                'email',
+                'description',
+                'redemption_center_status'
             )
         }),
         ('Timestamps', {
@@ -405,13 +349,30 @@ class RedemptionCenterAdmin(admin.ModelAdmin):
         }),
     )
     
-    def address_preview(self, obj):
-        """Show a preview of the address (first 50 chars)"""
-        if obj.redemption_center_address:
-            preview = obj.redemption_center_address[:50] + '...' if len(obj.redemption_center_address) > 50 else obj.redemption_center_address
-            return format_html('<span title="{}">{}</span>', obj.redemption_center_address, preview)
-        return '-'
-    address_preview.short_description = 'Address'
+    def redemption_center_status_badge(self, obj):
+        """Display redemption center status with colored badge"""
+        if obj.redemption_center_status == 'active':
+            color = 'success'
+            text = 'Active'
+        else:
+            color = 'secondary'
+            text = 'Inactive'
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color, text
+        )
+    redemption_center_status_badge.short_description = 'Status'
+    redemption_center_status_badge.admin_order_field = 'redemption_center_status'
+    
+    def get_search_results(self, request, queryset, search_term):
+        """Filter autocomplete results to only active redemption centers"""
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+        # Only filter if it's an autocomplete request (for Incentive form)
+        if 'autocomplete' in request.path:
+            queryset = queryset.filter(redemption_center_status='active')
+        
+        return queryset, use_distinct
+    
 
 
 @admin.register(Incentive)
@@ -443,6 +404,27 @@ class IncentiveAdmin(admin.ModelAdmin):
     list_per_page = 25
     date_hierarchy = 'date_sent'
     
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        """Filter redemption centers to only active ones in the form"""
+        if db_field.name == 'redemption_center':
+            # Filter to only active redemption centers
+            kwargs['queryset'] = RedemptionCenter.objects.filter(
+                redemption_center_status='active'
+            ).order_by('fullname')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
+    def get_form(self, request, obj=None, **kwargs):
+        """Override form to allow editing existing incentives with inactive centers"""
+        form = super().get_form(request, obj, **kwargs)
+        if 'redemption_center' in form.base_fields:
+            # If editing existing incentive with inactive center, include it in queryset
+            if obj and obj.redemption_center and obj.redemption_center.redemption_center_status != 'active':
+                from django.db.models import Q
+                form.base_fields['redemption_center'].queryset = RedemptionCenter.objects.filter(
+                    Q(redemption_center_status='active') | Q(pk=obj.redemption_center.pk)
+                ).order_by('fullname')
+        return form
+    
     fieldsets = (
         ('Incentive Information', {
             'fields': (
@@ -459,3 +441,62 @@ class IncentiveAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(Disbursement)
+class DisbursementAdmin(admin.ModelAdmin):
+    """
+    Admin interface for Disbursement model.
+    """
+    list_display = [
+        'disbursement_id',
+        'farmer',
+        'incentive',
+        'quantity',
+        'redemption_center',
+        'disbursed_by',
+        'disbursement_date'
+    ]
+    list_filter = [
+        'redemption_center',
+        'incentive',
+        'disbursement_date',
+        'created_at'
+    ]
+    search_fields = [
+        'disbursement_id',
+        'farmer__firstname',
+        'farmer__surname',
+        'farmer__NIN',
+        'incentive__incentive_name',
+        'redemption_center__fullname'
+    ]
+    readonly_fields = ['disbursement_id', 'disbursement_date', 'created_at', 'updated_at']
+    autocomplete_fields = ['farmer', 'incentive', 'redemption_center', 'disbursed_by']
+    list_per_page = 25
+    date_hierarchy = 'disbursement_date'
+    
+    fieldsets = (
+        ('Disbursement Information', {
+            'fields': (
+                'disbursement_id',
+                'incentive',
+                'farmer',
+                'quantity',
+                'redemption_center',
+                'disbursed_by',
+                'disbursement_date',
+                'notes'
+            )
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_readonly_fields(self, request, obj=None):
+        """Make all fields readonly for existing disbursements to prevent modification"""
+        if obj:  # editing an existing object
+            return list(self.readonly_fields) + ['incentive', 'farmer', 'quantity', 'redemption_center', 'disbursed_by', 'notes']
+        return self.readonly_fields
