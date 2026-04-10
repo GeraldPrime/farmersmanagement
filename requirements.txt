@@ -19,4 +19,4 @@ python-decouple==3.8
 
 # Additional utilities
 python-dotenv==1.0.1
-
+requests
