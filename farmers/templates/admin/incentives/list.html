@@ -4,7 +4,6 @@
 <div class="content-page">
     <div class="content">
         <div class="container-fluid">
-            <!-- start page title -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box">
@@ -18,45 +17,37 @@
                     </div>
                 </div>
             </div>
-            <!-- end page title -->
 
             <div class="row">
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="header-title mb-0">All Incentives</h5>
-                                <a href="{% url 'incentive_create' %}" class="btn btn-primary">
-                                    <i class="ri-add-line me-1"></i> Add New Incentive
-                                </a>
+                                <h5 class="header-title mb-0">All Incentive Batches</h5>
+                                <div>
+                                    <a href="{% url 'admin_disburse' %}" class="btn btn-success me-2">
+                                        <i class="ri-send-plane-line me-1"></i> Disburse to Farmer
+                                    </a>
+                                    <a href="{% url 'incentive_create' %}" class="btn btn-primary">
+                                        <i class="ri-add-line me-1"></i> Add Incentive Batch
+                                    </a>
+                                </div>
                             </div>
 
                             <!-- Search and Filter -->
                             <form method="get" class="mb-3">
                                 <div class="row g-2">
-                                    <div class="col-md-3">
-                                        <input type="text" name="search" class="form-control" 
-                                               placeholder="Search by name, redemption center..." 
+                                    <div class="col-md-4">
+                                        <input type="text" name="search" class="form-control"
+                                               placeholder="Search by name..."
                                                value="{{ search_query }}">
                                     </div>
                                     <div class="col-md-2">
-                                        <select name="center" class="form-select">
-                                            <option value="">All Centers</option>
-                                            {% for center in redemption_centers %}
-                                            <option value="{{ center.id }}" {% if center_filter == center.id|stringformat:"s" %}selected{% endif %}>
-                                                {{ center.fullname }}
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <input type="date" name="date_from" class="form-control" 
-                                               placeholder="From Date" 
+                                        <input type="date" name="date_from" class="form-control"
                                                value="{{ date_from }}">
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="date" name="date_to" class="form-control" 
-                                               placeholder="To Date" 
+                                        <input type="date" name="date_to" class="form-control"
                                                value="{{ date_to }}">
                                     </div>
                                     <div class="col-md-1">
@@ -64,9 +55,9 @@
                                             <i class="ri-search-line"></i>
                                         </button>
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-1">
                                         <a href="{% url 'incentives_list' %}" class="btn btn-secondary w-100">
-                                            <i class="ri-refresh-line"></i> Reset
+                                            <i class="ri-refresh-line"></i>
                                         </a>
                                     </div>
                                 </div>
@@ -78,41 +69,41 @@
                                         <tr>
                                             <th>ID</th>
                                             <th>Incentive Name</th>
-                                            <th>Quantity</th>
-                                            <th>Redemption Center</th>
-                                            <th>Date Sent</th>
-                                            <th>Created</th>
+                                            <th>Total Qty</th>
+                                            <th>Disbursed</th>
+                                            <th>Remaining</th>
+                                            <th>Date Created</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for incentive in incentives %}
+                                        {% for item in incentives %}
                                         <tr>
-                                            <td><strong>#{{ incentive.incentive_id }}</strong></td>
-                                            <td><strong>{{ incentive.incentive_name }}</strong></td>
+                                            <td><strong>#{{ item.incentive.incentive_id }}</strong></td>
+                                            <td><strong>{{ item.incentive.incentive_name }}</strong></td>
+                                            <td><span class="badge bg-primary">{{ item.incentive.quantity }}</span></td>
+                                            <td><span class="badge bg-warning text-dark">{{ item.disbursed_quantity }}</span></td>
                                             <td>
-                                                <span class="badge bg-primary">{{ incentive.quantity }} units</span>
+                                                {% if item.remaining_quantity > 0 %}
+                                                <span class="badge bg-success">{{ item.remaining_quantity }}</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">0 — Fully disbursed</span>
+                                                {% endif %}
                                             </td>
-                                            <td>
-                                                <a href="{% url 'redemption_center_detail' incentive.redemption_center.pk %}">
-                                                    {{ incentive.redemption_center.fullname }}
-                                                </a>
-                                            </td>
-                                            <td>{{ incentive.date_sent|date:"M d, Y" }}</td>
-                                            <td>{{ incentive.created_at|date:"M d, Y" }}</td>
+                                            <td>{{ item.incentive.date_created|date:"M d, Y" }}</td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a href="{% url 'incentive_detail' incentive.pk %}" 
+                                                    <a href="{% url 'incentive_detail' item.incentive.pk %}"
                                                        class="btn btn-sm btn-info" title="View">
                                                         <i class="ri-eye-line"></i>
                                                     </a>
-                                                    <a href="{% url 'incentive_edit' incentive.pk %}" 
+                                                    <a href="{% url 'incentive_edit' item.incentive.pk %}"
                                                        class="btn btn-sm btn-warning" title="Edit">
                                                         <i class="ri-pencil-line"></i>
                                                     </a>
-                                                    <a href="{% url 'incentive_delete' incentive.pk %}" 
+                                                    <a href="{% url 'incentive_delete' item.incentive.pk %}"
                                                        class="btn btn-sm btn-danger" title="Delete"
-                                                       onclick="return confirm('Are you sure you want to delete this incentive?');">
+                                                       onclick="return confirm('Delete this incentive batch?');">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </a>
                                                 </div>
@@ -122,7 +113,7 @@
                                         <tr>
                                             <td colspan="7" class="text-center text-muted py-4">
                                                 <i class="ri-inbox-line fs-48 text-muted d-block mb-2"></i>
-                                                No incentives found. <a href="{% url 'incentive_create' %}">Add your first incentive</a>
+                                                No incentive batches found. <a href="{% url 'incentive_create' %}">Add the first one</a>
                                             </td>
                                         </tr>
                                         {% endfor %}
@@ -137,4 +128,3 @@
     </div>
 </div>
 {% endblock content %}
-

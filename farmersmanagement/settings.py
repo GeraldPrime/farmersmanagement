@@ -12,9 +12,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -33,6 +36,7 @@ ALLOWED_HOSTS = [
     'pythonanywhere.com'
     
     'localhost:8000'
+    '.vercel.app'
     
     ]
 
@@ -147,3 +151,16 @@ os.makedirs(os.path.join(MEDIA_ROOT, 'farmers'), exist_ok=True)
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ============================================================================
+# FICOVEN IDENTITY VERIFICATION API
+# ============================================================================
+FICOVEN_API_KEY = os.environ.get('FICOVEN_API_KEY', 'vfy_f0982bcaefe5a4c757b392af18699d6cf5e863dcf491194b10269812eced438d')
+FICOVEN_BASE_URL = os.environ.get('FICOVEN_BASE_URL', 'https://identity.ficoven.com')
+
+# BVN verification requires Supabase credentials (set via environment variables in production)
+FICOVEN_SUPABASE_URL = os.environ.get('FICOVEN_SUPABASE_URL', 'https://nlljpcfcdbqyhurzswqy.supabase.co')
+FICOVEN_SUPABASE_ANON = os.environ.get('FICOVEN_SUPABASE_ANON', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sbGpwY2ZjZGJxeWh1cnpzd3F5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NzQ3OTksImV4cCI6MjA2NzE1MDc5OX0.yTwQceJhyA0tLa6C9fvtGde0bQd8e3zBkGLH4wEKclk')
+FICOVEN_EMAIL = os.environ.get('FICOVEN_EMAIL', '')       # FICOVEN account email for BVN
+FICOVEN_PASSWORD = os.environ.get('FICOVEN_PASSWORD', '') # FICOVEN account password for BVN

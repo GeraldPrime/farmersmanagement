@@ -5,3 +5,10 @@ __pycache__/
 .Python
 # db.sqlite3
 *.log
+.claude
+.env
+.venv
+env/
+venv/
+ENV/
+__pycache__

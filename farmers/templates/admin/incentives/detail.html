@@ -11,88 +11,81 @@
                             <ol class="breadcrumb m-0">
                                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                                 <li class="breadcrumb-item"><a href="{% url 'incentives_list' %}">Incentives</a></li>
-                                <li class="breadcrumb-item active">Details</li>
+                                <li class="breadcrumb-item active">{{ incentive.incentive_name }}</li>
                             </ol>
                         </div>
-                        <h4 class="page-title">Incentive Details</h4>
+                        <h4 class="page-title">Incentive Detail</h4>
                     </div>
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-lg-4">
                     <div class="card">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="ri-gift-line fs-48 text-primary"></i>
-                            </div>
-                            <h4>{{ incentive.incentive_name }}</h4>
-                            <p class="text-muted">ID: #{{ incentive.incentive_id }}</p>
-                            <span class="badge bg-primary fs-6 px-3 py-2">{{ incentive.quantity }} units</span>
-                        </div>
-                    </div>
-                    
-                    <div class="card mt-3">
                         <div class="card-body">
-                            <h5 class="card-title">Registration Information</h5>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Incentive ID:</span>
-                                <strong>#{{ incentive.incentive_id }}</strong>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Created:</span>
-                                <strong>{{ incentive.created_at|date:"F d, Y" }}</strong>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>Last Updated:</span>
-                                <strong>{{ incentive.updated_at|date:"F d, Y" }}</strong>
+                            <h5 class="card-title mb-3"><i class="ri-gift-line me-2"></i>{{ incentive.incentive_name }}</h5>
+                            <table class="table table-borderless table-sm">
+                                <tr><th>ID</th><td>#{{ incentive.incentive_id }}</td></tr>
+                                <tr><th>Total Quantity</th><td><span class="badge bg-primary">{{ incentive.quantity }}</span></td></tr>
+                                <tr><th>Disbursed</th><td><span class="badge bg-warning text-dark">{{ disbursed_quantity }}</span></td></tr>
+                                <tr><th>Remaining</th><td>
+                                    {% if remaining_quantity > 0 %}
+                                    <span class="badge bg-success">{{ remaining_quantity }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">0 — Fully disbursed</span>
+                                    {% endif %}
+                                </td></tr>
+                                <tr><th>Date Created</th><td>{{ incentive.date_created|date:"M d, Y" }}</td></tr>
+                            </table>
+                            {% if incentive.description %}
+                            <p class="text-muted small">{{ incentive.description }}</p>
+                            {% endif %}
+                            <div class="d-flex gap-2 mt-3">
+                                <a href="{% url 'incentive_edit' incentive.pk %}" class="btn btn-warning btn-sm">
+                                    <i class="ri-pencil-line me-1"></i>Edit
+                                </a>
+                                {% if remaining_quantity > 0 %}
+                                <a href="{% url 'admin_disburse' %}" class="btn btn-success btn-sm">
+                                    <i class="ri-send-plane-line me-1"></i>Disburse
+                                </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="col-md-8">
+
+                <div class="col-lg-8">
                     <div class="card">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title mb-0">Incentive Information</h5>
-                                <div>
-                                    <a href="{% url 'incentive_edit' incentive.pk %}" class="btn btn-warning btn-sm">
-                                        <i class="ri-pencil-line"></i> Edit
-                                    </a>
-                                </div>
+                            <h5 class="header-title mb-3">Disbursements</h5>
+                            <div class="table-responsive">
+                                <table class="table table-nowrap table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Farmer</th>
+                                            <th>NIN</th>
+                                            <th>Quantity</th>
+                                            <th>Disbursed By</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for d in disbursements %}
+                                        <tr>
+                                            <td>{{ d.farmer.get_full_name }}</td>
+                                            <td><code>{{ d.farmer.NIN }}</code></td>
+                                            <td><span class="badge bg-info">{{ d.quantity }}</span></td>
+                                            <td>{{ d.disbursed_by.get_full_name|default:d.disbursed_by.username|default:"-" }}</td>
+                                            <td>{{ d.disbursement_date|date:"M d, Y H:i" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-3">No disbursements yet.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-3"><strong>Incentive Name:</strong></div>
-                                <div class="col-md-9">{{ incentive.incentive_name }}</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-3"><strong>Quantity:</strong></div>
-                                <div class="col-md-9">
-                                    <span class="badge bg-primary fs-6">{{ incentive.quantity }} units</span>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-3"><strong>Redemption Center:</strong></div>
-                                <div class="col-md-9">
-                                    <a href="{% url 'redemption_center_detail' incentive.redemption_center.pk %}">
-                                        {{ incentive.redemption_center.fullname }}
-                                    </a>
-                                    <br>
-                                    <small class="text-muted">{{ incentive.redemption_center.email }}</small>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-3"><strong>Date Sent:</strong></div>
-                                <div class="col-md-9">{{ incentive.date_sent|date:"F d, Y" }}</div>
-                            </div>
-                            {% if incentive.description %}
-                            <div class="row mb-3">
-                                <div class="col-md-3"><strong>Description:</strong></div>
-                                <div class="col-md-9">{{ incentive.description|linebreaks }}</div>
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -101,4 +94,3 @@
     </div>
 </div>
 {% endblock content %}
-

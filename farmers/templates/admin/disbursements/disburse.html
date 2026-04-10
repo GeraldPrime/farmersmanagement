@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'disbursements_list' %}">Disbursements</a></li>
+                                <li class="breadcrumb-item active">Disburse Incentive</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Disburse Incentive to Farmer</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body">
+
+                            <!-- Step 1: Select Incentive and look up farmer -->
+                            <h5 class="mb-3"><i class="ri-gift-line me-2"></i>Step 1 — Select Incentive</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Incentive <span class="text-danger">*</span></label>
+                                <select id="incentiveSelect" class="form-select">
+                                    <option value="">-- Select Incentive --</option>
+                                    {% for item in available_incentives %}
+                                    <option value="{{ item.incentive.incentive_id }}"
+                                            data-remaining="{{ item.remaining_quantity }}">
+                                        {{ item.incentive.incentive_name }} — {{ item.remaining_quantity }} remaining
+                                    </option>
+                                    {% empty %}
+                                    <option value="" disabled>No incentives with remaining stock</option>
+                                    {% endfor %}
+                                </select>
+                                <div id="remainingInfo" class="form-text text-muted mt-1"></div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Step 2: Look up farmer by NIN -->
+                            <h5 class="mb-3"><i class="ri-user-search-line me-2"></i>Step 2 — Find Farmer by NIN</h5>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-8">
+                                    <input type="text" id="ninInput" class="form-control"
+                                           placeholder="Enter farmer's NIN (11 digits)" maxlength="11">
+                                </div>
+                                <div class="col-md-4">
+                                    <button id="lookupBtn" class="btn btn-info w-100" onclick="lookupFarmer()">
+                                        <i class="ri-search-line me-1"></i> Find Farmer
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Farmer info card (hidden until found) -->
+                            <div id="farmerCard" class="d-none">
+                                <div class="card bg-light border-0 mb-3">
+                                    <div class="card-body d-flex align-items-center gap-3">
+                                        <img id="farmerPhoto" src="" width="64" height="64"
+                                             class="rounded-circle object-fit-cover border d-none">
+                                        <div>
+                                            <h6 id="farmerName" class="mb-1"></h6>
+                                            <small id="farmerDetails" class="text-muted"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="farmerError" class="alert alert-danger d-none"></div>
+
+                            <hr>
+
+                            <!-- Step 3: Quantity and notes -->
+                            <h5 class="mb-3"><i class="ri-stack-line me-2"></i>Step 3 — Quantity & Notes</h5>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                    <input type="number" id="quantityInput" class="form-control"
+                                           value="1" min="1" placeholder="1">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Notes (optional)</label>
+                                    <input type="text" id="notesInput" class="form-control"
+                                           placeholder="Optional notes about this disbursement">
+                                </div>
+                            </div>
+
+                            <div id="disburseError" class="alert alert-danger d-none"></div>
+                            <div id="disburseSuccess" class="alert alert-success d-none"></div>
+
+                            <div class="d-flex justify-content-between mt-3">
+                                <a href="{% url 'disbursements_list' %}" class="btn btn-secondary">
+                                    <i class="ri-arrow-left-line me-1"></i> Back
+                                </a>
+                                <button id="disburseBtn" class="btn btn-success" onclick="processDisbursement()" disabled>
+                                    <i class="ri-send-plane-line me-1"></i> Disburse
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedFarmerId = null;
+
+document.getElementById('incentiveSelect').addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    const remaining = opt.dataset.remaining;
+    const info = document.getElementById('remainingInfo');
+    if (remaining !== undefined) {
+        info.textContent = `${remaining} units remaining in this batch.`;
+        document.getElementById('quantityInput').max = remaining;
+    } else {
+        info.textContent = '';
+    }
+    updateDisburseBtn();
+});
+
+document.getElementById('ninInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') lookupFarmer();
+});
+
+function lookupFarmer() {
+    const nin = document.getElementById('ninInput').value.trim();
+    const farmerCard = document.getElementById('farmerCard');
+    const farmerError = document.getElementById('farmerError');
+
+    farmerCard.classList.add('d-none');
+    farmerError.classList.add('d-none');
+    selectedFarmerId = null;
+    updateDisburseBtn();
+
+    if (!nin) { farmerError.textContent = 'Please enter a NIN.'; farmerError.classList.remove('d-none'); return; }
+
+    const btn = document.getElementById('lookupBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Searching...';
+
+    fetch('{% url "admin_lookup_farmer" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'nin=' + encodeURIComponent(nin)
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-search-line me-1"></i> Find Farmer';
+        if (data.success) {
+            selectedFarmerId = data.farmer.farmer_id;
+            document.getElementById('farmerName').textContent = data.farmer.full_name;
+            document.getElementById('farmerDetails').textContent =
+                `Phone: ${data.farmer.phone || '-'} | State: ${data.farmer.state || '-'} | LGA: ${data.farmer.lga || '-'}`;
+            if (data.farmer.picture_url) {
+                const img = document.getElementById('farmerPhoto');
+                img.src = data.farmer.picture_url;
+                img.classList.remove('d-none');
+            }
+            farmerCard.classList.remove('d-none');
+            updateDisburseBtn();
+        } else {
+            farmerError.textContent = data.error;
+            farmerError.classList.remove('d-none');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-search-line me-1"></i> Find Farmer';
+        farmerError.textContent = 'Network error. Please try again.';
+        farmerError.classList.remove('d-none');
+    });
+}
+
+function updateDisburseBtn() {
+    const incentiveId = document.getElementById('incentiveSelect').value;
+    document.getElementById('disburseBtn').disabled = !(incentiveId && selectedFarmerId);
+}
+
+function processDisbursement() {
+    const incentiveId = document.getElementById('incentiveSelect').value;
+    const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
+    const notes = document.getElementById('notesInput').value;
+    const errorDiv = document.getElementById('disburseError');
+    const successDiv = document.getElementById('disburseSuccess');
+
+    errorDiv.classList.add('d-none');
+    successDiv.classList.add('d-none');
+
+    const btn = document.getElementById('disburseBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+
+    fetch('{% url "admin_process_disbursement" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `incentive_id=${incentiveId}&farmer_id=${selectedFarmerId}&quantity=${quantity}&notes=${encodeURIComponent(notes)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            successDiv.innerHTML = `<i class="ri-check-line me-1"></i> ${data.message} Remaining: <strong>${data.remaining_quantity}</strong>`;
+            successDiv.classList.remove('d-none');
+            // Reset farmer section
+            selectedFarmerId = null;
+            document.getElementById('ninInput').value = '';
+            document.getElementById('farmerCard').classList.add('d-none');
+            document.getElementById('farmerPhoto').classList.add('d-none');
+            // Update remaining in select
+            const opt = document.getElementById('incentiveSelect').options[document.getElementById('incentiveSelect').selectedIndex];
+            if (opt) {
+                opt.dataset.remaining = data.remaining_quantity;
+                opt.textContent = opt.textContent.replace(/— \d+ remaining/, `— ${data.remaining_quantity} remaining`);
+                document.getElementById('remainingInfo').textContent = `${data.remaining_quantity} units remaining in this batch.`;
+            }
+        } else {
+            errorDiv.textContent = data.error;
+            errorDiv.classList.remove('d-none');
+        }
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ri-send-plane-line me-1"></i> Disburse';
+    })
+    .catch(() => {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.classList.remove('d-none');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-send-plane-line me-1"></i> Disburse';
+    });
+}
+</script>
+{% endblock content %}

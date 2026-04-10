@@ -1,12 +1,10 @@
 {% extends "base.html" %}
-{% load static %}
 {% load humanize %}
 
 {% block content %}
 <div class="content-page">
     <div class="content">
         <div class="container-fluid">
-            <!-- start page title -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box">
@@ -20,60 +18,30 @@
                     </div>
                 </div>
             </div>
-            <!-- end page title -->
 
-            <!-- Statistics Cards -->
+            <!-- Statistics -->
             <div class="row">
-                <div class="col-xl-4 col-md-6">
-                    <div class="card">
+                <div class="col-md-4">
+                    <div class="card text-center">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <h4 class="mb-0">{{ total_disbursements|intcomma }}</h4>
-                                    <p class="text-muted mb-0">Total Disbursements</p>
-                                </div>
-                                <div class="avatar-sm">
-                                    <span class="avatar-title bg-primary-subtle rounded-circle">
-                                        <i class="ri-file-list-3-line font-20 text-primary"></i>
-                                    </span>
-                                </div>
-                            </div>
+                            <h2 class="text-primary">{{ total_disbursements }}</h2>
+                            <p class="mb-0 text-muted">Total Disbursements</p>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-xl-4 col-md-6">
-                    <div class="card">
+                <div class="col-md-4">
+                    <div class="card text-center">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <h4 class="mb-0">{{ total_quantity|intcomma }}</h4>
-                                    <p class="text-muted mb-0">Total Items Disbursed</p>
-                                </div>
-                                <div class="avatar-sm">
-                                    <span class="avatar-title bg-success-subtle rounded-circle">
-                                        <i class="ri-hand-coin-line font-20 text-success"></i>
-                                    </span>
-                                </div>
-                            </div>
+                            <h2 class="text-success">{{ total_quantity }}</h2>
+                            <p class="mb-0 text-muted">Total Units Disbursed</p>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-xl-4 col-md-6">
-                    <div class="card">
+                <div class="col-md-4">
+                    <div class="card text-center">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <h4 class="mb-0">{{ unique_farmers|intcomma }}</h4>
-                                    <p class="text-muted mb-0">Unique Farmers Served</p>
-                                </div>
-                                <div class="avatar-sm">
-                                    <span class="avatar-title bg-info-subtle rounded-circle">
-                                        <i class="ri-user-3-line font-20 text-info"></i>
-                                    </span>
-                                </div>
-                            </div>
+                            <h2 class="text-info">{{ unique_farmers }}</h2>
+                            <p class="mb-0 text-muted">Unique Farmers Served</p>
                         </div>
                     </div>
                 </div>
@@ -85,50 +53,44 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="header-title mb-0">All Disbursements</h5>
+                                <a href="{% url 'admin_disburse' %}" class="btn btn-success">
+                                    <i class="ri-send-plane-line me-1"></i> Disburse Incentive
+                                </a>
                             </div>
 
                             <!-- Search and Filter -->
                             <form method="get" class="mb-3">
                                 <div class="row g-2">
                                     <div class="col-md-3">
-                                        <input type="text" name="search" class="form-control" 
-                                               placeholder="Search by farmer name, NIN, incentive..." 
+                                        <input type="text" name="search" class="form-control"
+                                               placeholder="Search by farmer, NIN, incentive..."
                                                value="{{ search_query }}">
-                                    </div>
-                                    <div class="col-md-2">
-                                        <select name="center" class="form-select">
-                                            <option value="">All Redemption Centers</option>
-                                            {% for center in redemption_centers %}
-                                            <option value="{{ center.redemption_center_id }}" {% if center_filter == center.redemption_center_id|stringformat:"s" %}selected{% endif %}>
-                                                {{ center.fullname }}
-                                            </option>
-                                            {% endfor %}
-                                        </select>
                                     </div>
                                     <div class="col-md-2">
                                         <select name="incentive" class="form-select">
                                             <option value="">All Incentives</option>
-                                            {% for incentive in incentives %}
-                                            <option value="{{ incentive.incentive_id }}" {% if incentive_filter == incentive.incentive_id|stringformat:"s" %}selected{% endif %}>
-                                                {{ incentive.incentive_name }}
+                                            {% for inc in incentives %}
+                                            <option value="{{ inc.pk }}" {% if incentive_filter == inc.pk|stringformat:"s" %}selected{% endif %}>
+                                                {{ inc.incentive_name }}
                                             </option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="date" name="date_from" class="form-control" 
-                                               placeholder="From Date" 
-                                               value="{{ date_from }}">
+                                        <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="date" name="date_to" class="form-control" 
-                                               placeholder="To Date" 
-                                               value="{{ date_to }}">
+                                        <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
                                     </div>
                                     <div class="col-md-1">
                                         <button type="submit" class="btn btn-info w-100">
                                             <i class="ri-search-line"></i>
                                         </button>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <a href="{% url 'disbursements_list' %}" class="btn btn-secondary w-100">
+                                            <i class="ri-refresh-line"></i> Reset
+                                        </a>
                                     </div>
                                 </div>
                             </form>
@@ -138,60 +100,33 @@
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Date & Time</th>
                                             <th>Farmer</th>
                                             <th>NIN</th>
                                             <th>Incentive</th>
                                             <th>Quantity</th>
-                                            <th>Redemption Center</th>
                                             <th>Disbursed By</th>
+                                            <th>Date</th>
                                             <th>Notes</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for disbursement in disbursements %}
+                                        {% for d in disbursements %}
                                         <tr>
-                                            <td><strong>#{{ disbursement.disbursement_id }}</strong></td>
-                                            <td>{{ disbursement.disbursement_date|date:"M d, Y H:i" }}</td>
-                                            <td>
-                                                <strong>{{ disbursement.farmer.get_full_name }}</strong>
-                                                <br><small class="text-muted">{{ disbursement.farmer.phone }}</small>
-                                            </td>
-                                            <td><code>{{ disbursement.farmer.NIN }}</code></td>
-                                            <td>
-                                                <a href="{% url 'incentive_detail' disbursement.incentive.incentive_id %}">
-                                                    {{ disbursement.incentive.incentive_name }}
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary">{{ disbursement.quantity|intcomma }} units</span>
-                                            </td>
-                                            <td>
-                                                <a href="{% url 'redemption_center_detail' disbursement.redemption_center.redemption_center_id %}">
-                                                    {{ disbursement.redemption_center.fullname }}
-                                                </a>
-                                            </td>
-                                            <td>
-                                                {% if disbursement.disbursed_by %}
-                                                    {{ disbursement.disbursed_by.username }}
-                                                {% else %}
-                                                    <span class="text-muted">-</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if disbursement.notes %}
-                                                    <small class="text-muted" title="{{ disbursement.notes }}">
-                                                        {{ disbursement.notes|truncatewords:5 }}
-                                                    </small>
-                                                {% else %}
-                                                    <span class="text-muted">-</span>
-                                                {% endif %}
-                                            </td>
+                                            <td><strong>#{{ d.disbursement_id }}</strong></td>
+                                            <td>{{ d.farmer.get_full_name }}</td>
+                                            <td><code>{{ d.farmer.NIN }}</code></td>
+                                            <td>{{ d.incentive.incentive_name }}</td>
+                                            <td><span class="badge bg-info">{{ d.quantity }}</span></td>
+                                            <td>{{ d.disbursed_by.get_full_name|default:d.disbursed_by.username|default:"-" }}</td>
+                                            <td>{{ d.disbursement_date|date:"M d, Y H:i" }}</td>
+                                            <td class="text-muted small">{{ d.notes|default:"-"|truncatechars:40 }}</td>
                                         </tr>
                                         {% empty %}
                                         <tr>
-                                            <td colspan="9" class="text-center text-muted py-4">
-                                                No disbursements found.
+                                            <td colspan="8" class="text-center text-muted py-4">
+                                                <i class="ri-inbox-line fs-48 text-muted d-block mb-2"></i>
+                                                No disbursements recorded yet.
+                                                <a href="{% url 'admin_disburse' %}">Disburse an incentive</a>
                                             </td>
                                         </tr>
                                         {% endfor %}
@@ -206,4 +141,3 @@
     </div>
 </div>
 {% endblock content %}
-

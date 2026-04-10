@@ -1,0 +1,208 @@
+{% extends "vendors/base.html" %}
+{% load static %}
+
+{% block title %}Verify Farmer Identity | Vendor Portal{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'vendor_dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'vendor_farmers_list' %}">My Farmers</a></li>
+                                <li class="breadcrumb-item active">Verify Identity</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Farmer Identity Verification</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-7">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <i class="ri-shield-check-line text-primary" style="font-size: 3rem;"></i>
+                                <h5 class="mt-2">Verify Before Registering</h5>
+                                <p class="text-muted">Verify the farmer's identity using their NIN, BVN, or Phone Number before proceeding with registration.</p>
+                            </div>
+
+                            <!-- Verification Method Tabs -->
+                            <ul class="nav nav-pills nav-justified mb-4" id="verifyTab">
+                                <li class="nav-item">
+                                    <button class="nav-link active" onclick="setType('nin', this)">
+                                        <i class="ri-id-card-line me-1"></i> NIN
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" onclick="setType('bvn', this)">
+                                        <i class="ri-bank-card-line me-1"></i> BVN
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" onclick="setType('phone', this)">
+                                        <i class="ri-phone-line me-1"></i> Phone
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div id="idLabel" class="mb-1 fw-semibold">Enter NIN (11 digits)</div>
+                            <div class="row g-2 mb-3">
+                                <div class="col">
+                                    <input type="text" id="idValue" class="form-control form-control-lg"
+                                           placeholder="Enter 11-digit NIN" maxlength="11">
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-primary btn-lg" onclick="verifyIdentity()">
+                                        <i class="ri-search-line me-1"></i> Verify
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="loadingDiv" class="text-center py-3 d-none">
+                                <div class="spinner-border text-primary" role="status"></div>
+                                <p class="mt-2 text-muted">Verifying identity...</p>
+                            </div>
+
+                            <div id="errorDiv" class="alert alert-danger d-none"></div>
+
+                            <!-- Verification Result -->
+                            <div id="resultDiv" class="d-none">
+                                <div class="alert alert-success">
+                                    <i class="ri-check-circle-line me-1"></i> <strong>Identity Verified Successfully</strong>
+                                </div>
+                                <div class="card bg-light border-0">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3 text-center mb-3 mb-md-0">
+                                                <div id="photoContainer">
+                                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
+                                                         style="width:80px;height:80px;">
+                                                        <i class="ri-user-line text-white" style="font-size:2rem;"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <table class="table table-borderless table-sm mb-0">
+                                                    <tr><th style="width:40%">Full Name</th><td id="rName">-</td></tr>
+                                                    <tr><th>Gender</th><td id="rGender">-</td></tr>
+                                                    <tr><th>Date of Birth</th><td id="rDob">-</td></tr>
+                                                    <tr><th>Phone</th><td id="rPhone">-</td></tr>
+                                                    <tr><th>NIN</th><td id="rNin">-</td></tr>
+                                                    <tr><th>BVN</th><td id="rBvn">-</td></tr>
+                                                    <tr><th>Address</th><td id="rAddress">-</td></tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-3">
+                                    <button class="btn btn-outline-secondary" onclick="resetVerification()">
+                                        <i class="ri-refresh-line me-1"></i> Verify Different Person
+                                    </button>
+                                    <a href="{% url 'vendor_farmer_create' %}" class="btn btn-success btn-lg">
+                                        <i class="ri-user-add-line me-1"></i> Proceed to Registration
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentType = 'nin';
+
+const placeholders = {
+    nin: 'Enter 11-digit NIN',
+    bvn: 'Enter 11-digit BVN',
+    phone: 'Enter phone number (e.g. 08012345678)',
+};
+const labels = {
+    nin: 'Enter NIN (11 digits)',
+    bvn: 'Enter BVN (11 digits)',
+    phone: 'Enter Phone Number',
+};
+
+function setType(type, btn) {
+    currentType = type;
+    document.querySelectorAll('#verifyTab .nav-link').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const input = document.getElementById('idValue');
+    input.placeholder = placeholders[type];
+    input.maxLength = type === 'phone' ? 15 : 11;
+    document.getElementById('idLabel').textContent = labels[type];
+    resetVerification();
+}
+
+function resetVerification() {
+    document.getElementById('resultDiv').classList.add('d-none');
+    document.getElementById('errorDiv').classList.add('d-none');
+    document.getElementById('idValue').value = '';
+}
+
+document.getElementById('idValue').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') verifyIdentity();
+});
+
+function verifyIdentity() {
+    const value = document.getElementById('idValue').value.trim();
+    const errorDiv = document.getElementById('errorDiv');
+    const loadingDiv = document.getElementById('loadingDiv');
+    const resultDiv = document.getElementById('resultDiv');
+
+    errorDiv.classList.add('d-none');
+    resultDiv.classList.add('d-none');
+
+    if (!value) { errorDiv.textContent = 'Please enter a value.'; errorDiv.classList.remove('d-none'); return; }
+
+    loadingDiv.classList.remove('d-none');
+
+    fetch('{% url "verify_farmer_identity" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `id_type=${currentType}&id_value=${encodeURIComponent(value)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        loadingDiv.classList.add('d-none');
+        if (data.success) {
+            const p = data.person;
+            const fullName = [p.firstname, p.middlename, p.lastname].filter(Boolean).join(' ');
+            document.getElementById('rName').textContent = fullName || '-';
+            document.getElementById('rGender').textContent = p.gender || '-';
+            document.getElementById('rDob').textContent = p.date_of_birth || '-';
+            document.getElementById('rPhone').textContent = p.phone || '-';
+            document.getElementById('rNin').textContent = p.nin || '-';
+            document.getElementById('rBvn').textContent = p.bvn || '-';
+            document.getElementById('rAddress').textContent = p.address || '-';
+            const photoContainer = document.getElementById('photoContainer');
+            if (data.photo_url) {
+                photoContainer.innerHTML = `<img src="${data.photo_url}" width="80" height="80" class="rounded-circle" style="object-fit:cover;" alt="Verified photo">`;
+            } else {
+                photoContainer.innerHTML = `<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width:80px;height:80px;"><i class="ri-user-line text-white" style="font-size:2rem;"></i></div>`;
+            }
+            resultDiv.classList.remove('d-none');
+        } else {
+            errorDiv.textContent = data.error;
+            errorDiv.classList.remove('d-none');
+        }
+    })
+    .catch(() => {
+        loadingDiv.classList.add('d-none');
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.classList.remove('d-none');
+    });
+}
+</script>
+{% endblock content %}

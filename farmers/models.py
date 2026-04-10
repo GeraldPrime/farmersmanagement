@@ -15,12 +15,12 @@ class State(models.Model):
     """
     name = models.CharField(max_length=100, unique=True, help_text="Name of the state")
     code = models.CharField(max_length=3, unique=True, blank=True, null=True, help_text="State code (e.g., LAG, ABJ)")
-    
+
     class Meta:
         verbose_name = "State"
         verbose_name_plural = "States"
         ordering = ['name']
-    
+
     def __str__(self):
         return self.name
 
@@ -31,13 +31,13 @@ class LGA(models.Model):
     """
     name = models.CharField(max_length=100, help_text="Name of the Local Government Area")
     state = models.ForeignKey(State, on_delete=models.CASCADE, related_name='lgas', help_text="State this LGA belongs to")
-    
+
     class Meta:
         verbose_name = "Local Government Area"
         verbose_name_plural = "Local Government Areas"
         ordering = ['state', 'name']
         unique_together = ['name', 'state']
-    
+
     def __str__(self):
         return f"{self.name}, {self.state.name}"
 
@@ -72,12 +72,12 @@ class Farmer(models.Model):
         ('female', 'Female'),
         ('other', 'Other'),
     ]
-    
+
     STATUS_CHOICES = [
         ('active', 'Active'),
         ('inactive', 'Inactive'),
     ]
-    
+
     farmer_id = models.AutoField(primary_key=True, verbose_name="Farmer ID")
     firstname = models.CharField(max_length=100, help_text="First name of the farmer")
     surname = models.CharField(max_length=100, help_text="Surname of the farmer")
@@ -213,7 +213,7 @@ class Group(models.Model):
     group_name = models.CharField(max_length=200, help_text="Name of the farmer group")
     group_type = models.ForeignKey(
         GroupType,
-        on_delete=models.PROTECT, # Protect the group type from being deleted if it is referenced by a group
+        on_delete=models.PROTECT,
         related_name='groups',
         help_text="Select the type of group"
     )
@@ -254,7 +254,7 @@ class Vendor(models.Model):
         ('active', 'Active'),
         ('inactive', 'Inactive'),
     ]
-    
+
     vendor_id = models.AutoField(primary_key=True, verbose_name="Vendor ID")
     vendor_firstname = models.CharField(max_length=100, help_text="First name of the vendor")
     vendor_surname = models.CharField(max_length=100, help_text="Surname of the vendor")
@@ -314,7 +314,6 @@ class Vendor(models.Model):
     def save(self, *args, **kwargs):
         """Generate a unique 6-digit registration number if not set"""
         if not self.vendor_registration_no:
-            # Generate a unique 6-digit registration number
             while True:
                 registration_no = str(random.randint(100000, 999999))
                 if not Vendor.objects.filter(vendor_registration_no=registration_no).exists():
@@ -326,75 +325,16 @@ class Vendor(models.Model):
         return reverse('admin:farmers_vendor_change', args=[self.pk])
 
 
-class RedemptionCenter(models.Model):
-    """
-    Model to store redemption center information.
-    """
-    STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('inactive', 'Inactive'),
-    ]
-    
-    redemption_center_id = models.AutoField(primary_key=True, verbose_name="Redemption Center ID")
-    fullname = models.CharField(max_length=200, help_text="Full name of the redemption center")
-    redemption_center_address = models.TextField(help_text="Complete address of the redemption center")
-    phone_no = models.CharField(
-        max_length=20,
-        validators=[RegexValidator(regex=r'^[\d\s\-\+\(\)]{7,20}$', message="Please enter a valid phone number (7-20 characters, digits, spaces, dashes, parentheses, or + allowed).")],
-        help_text="Contact phone number"
-    )
-    email = models.EmailField(unique=True, help_text="Email address of the redemption center")
-    description = models.TextField(blank=True, help_text="Description of the redemption center (optional)")
-    redemption_center_status = models.CharField(
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default='active',
-        help_text="Current status of the redemption center"
-    )
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='redemption_center_profile',
-        help_text="Django User account for redemption center login credentials"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Redemption Center"
-        verbose_name_plural = "Redemption Centers"
-        ordering = ['fullname']
-        indexes = [
-            models.Index(fields=['fullname']),
-            models.Index(fields=['email']),
-            models.Index(fields=['redemption_center_status']),
-        ]
-
-    def __str__(self):
-        return f"{self.fullname} (ID: {self.redemption_center_id})"
-
-    def get_absolute_url(self):
-        return reverse('admin:farmers_redemptioncenter_change', args=[self.pk])
-
-
 class Incentive(models.Model):
     """
-    Model to store incentives allocated to redemption centers for distribution to farmers.
+    Model to store incentive batches managed by admin for distribution to farmers.
     """
     incentive_id = models.AutoField(primary_key=True, verbose_name="Incentive ID")
     incentive_name = models.CharField(max_length=200, help_text="Name of the incentive")
-    quantity = models.PositiveIntegerField(help_text="Quantity of the incentive")
-    redemption_center = models.ForeignKey(
-        'RedemptionCenter',
-        on_delete=models.CASCADE,
-        related_name='incentives',
-        help_text="Redemption center where this incentive is allocated"
-    )
-    date_sent = models.DateField(
+    quantity = models.PositiveIntegerField(help_text="Total quantity of this incentive batch")
+    date_created = models.DateField(
         default=date.today,
-        help_text="Date when the incentive was sent to the redemption center"
+        help_text="Date when the incentive batch was created"
     )
     description = models.TextField(blank=True, help_text="Description of the incentive (optional)")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -403,25 +343,25 @@ class Incentive(models.Model):
     class Meta:
         verbose_name = "Incentive"
         verbose_name_plural = "Incentives"
-        ordering = ['-date_sent', '-created_at']
+        ordering = ['-date_created', '-created_at']
         indexes = [
-            models.Index(fields=['date_sent', 'redemption_center']),
+            models.Index(fields=['date_created']),
             models.Index(fields=['incentive_name']),
         ]
 
     def __str__(self):
-        return f"{self.incentive_name} - {self.quantity} units ({self.redemption_center.fullname})"
+        return f"{self.incentive_name} ({self.quantity} units)"
 
     def get_absolute_url(self):
-        return reverse('admin:farmers_incentive_change', args=[self.pk])
-    
+        return reverse('incentive_detail', args=[self.pk])
+
     def get_remaining_quantity(self):
         """Calculate remaining quantity after disbursements"""
         total_disbursed = self.disbursements.aggregate(
             total=Sum('quantity')
         )['total'] or 0
         return max(0, self.quantity - total_disbursed)
-    
+
     def get_disbursed_quantity(self):
         """Calculate total quantity disbursed"""
         return self.disbursements.aggregate(
@@ -431,7 +371,7 @@ class Incentive(models.Model):
 
 class Disbursement(models.Model):
     """
-    Model to track disbursement of incentives to farmers by redemption centers.
+    Model to track disbursement of incentives to farmers by admin.
     Prevents duplicate disbursements of the same incentive to the same farmer.
     """
     disbursement_id = models.AutoField(primary_key=True, verbose_name="Disbursement ID")
@@ -451,19 +391,13 @@ class Disbursement(models.Model):
         default=1,
         help_text="Quantity of incentive disbursed to the farmer"
     )
-    redemption_center = models.ForeignKey(
-        'RedemptionCenter',
-        on_delete=models.CASCADE,
-        related_name='disbursements',
-        help_text="Redemption center that disbursed this incentive"
-    )
     disbursed_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='disbursements_made',
-        help_text="User who processed this disbursement"
+        help_text="Admin user who processed this disbursement"
     )
     disbursement_date = models.DateTimeField(
         auto_now_add=True,
@@ -482,14 +416,13 @@ class Disbursement(models.Model):
         ordering = ['-disbursement_date']
         indexes = [
             models.Index(fields=['incentive', 'farmer']),
-            models.Index(fields=['redemption_center', 'disbursement_date']),
             models.Index(fields=['farmer', 'disbursement_date']),
+            models.Index(fields=['disbursement_date']),
         ]
-        # Ensure a farmer cannot receive the same incentive from the same allocation twice
         unique_together = ['incentive', 'farmer']
 
     def __str__(self):
         return f"{self.farmer.get_full_name()} - {self.incentive.incentive_name} ({self.quantity} units)"
 
     def get_absolute_url(self):
-        return reverse('redemption_center:disbursements')
+        return reverse('disbursements_list')

@@ -235,13 +235,6 @@
                     </li>
 
                     <li class="side-nav-item">
-                <a href="{% url 'redemption_centers_list' %}" class="side-nav-link">
-                    <i class="ri-building-line"></i>
-                    <span> Redemption Centers </span>
-                </a>
-                    </li>
-
-                    <li class="side-nav-item">
                 <a href="{% url 'incentives_list' %}" class="side-nav-link">
                     <i class="ri-gift-line"></i>
                     <span> Incentives </span>
@@ -255,20 +248,19 @@
                 </a>
                     </li>
 
+                    <li class="side-nav-item">
+                <a href="{% url 'admin_disburse' %}" class="side-nav-link">
+                    <i class="ri-send-plane-line"></i>
+                    <span> Disburse Incentive </span>
+                </a>
+                    </li>
+
             <li class="side-nav-title">Portal Access</li>
 
                     <li class="side-nav-item">
                 <a href="{% url 'vendor_login' %}" class="side-nav-link" target="_blank">
                     <i class="ri-store-line"></i>
                     <span> Vendor Login </span>
-                    <span class="badge bg-primary-subtle text-primary ms-auto">Portal</span>
-                </a>
-                    </li>
-
-                    <li class="side-nav-item">
-                <a href="{% url 'redemption_center_login' %}" class="side-nav-link" target="_blank">
-                    <i class="ri-building-2-line"></i>
-                    <span> Redemption Center Login </span>
                     <span class="badge bg-primary-subtle text-primary ms-auto">Portal</span>
                 </a>
                     </li>

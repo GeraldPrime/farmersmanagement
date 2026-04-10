@@ -4,7 +4,6 @@
 <div class="content-page">
     <div class="content">
         <div class="container-fluid">
-            <!-- start page title -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box">
@@ -19,124 +18,53 @@
                     </div>
                 </div>
             </div>
-            <!-- end page title -->
 
             <div class="row">
-                <div class="col-12">
+                <div class="col-lg-8">
                     <div class="card">
                         <div class="card-body">
-                            <!-- Display form-level errors -->
                             {% if form.non_field_errors %}
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <strong>Error:</strong>
-                                <ul class="mb-0">
-                                    {% for error in form.non_field_errors %}
-                                    <li>{{ error }}</li>
-                                    {% endfor %}
-                                </ul>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                <ul class="mb-0">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                             {% endif %}
-                            
+
                             <form method="post">
                                 {% csrf_token %}
-                                
-                                <!-- Incentive Information -->
+
                                 <div class="mb-4">
                                     <h5 class="mb-3"><i class="ri-gift-line me-2"></i>Incentive Information</h5>
                                     <div class="row">
-                                        <div class="col-md-6">
+                                        <div class="col-md-8 mb-3">
                                             <label class="form-label">Incentive Name <span class="text-danger">*</span></label>
                                             {{ form.incentive_name }}
-                                            {% if form.incentive_name.errors %}
-                                            <div class="text-danger small mt-1">
-                                                <i class="ri-error-warning-line"></i> {{ form.incentive_name.errors|join:", " }}
-                                            </div>
-                                            {% endif %}
+                                            {% if form.incentive_name.errors %}<div class="text-danger small">{{ form.incentive_name.errors }}</div>{% endif %}
                                         </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Total Quantity <span class="text-danger">*</span></label>
                                             {{ form.quantity }}
-                                            {% if form.quantity.errors %}
-                                            <div class="text-danger small mt-1">
-                                                <i class="ri-error-warning-line"></i> {{ form.quantity.errors|join:", " }}
-                                            </div>
-                                            {% endif %}
+                                            {% if form.quantity.errors %}<div class="text-danger small">{{ form.quantity.errors }}</div>{% endif %}
                                         </div>
                                     </div>
-                                </div>
-
-                                <hr>
-
-                                <!-- Description -->
-                                <div class="mb-4">
-                                    <h5 class="mb-3"><i class="ri-file-text-line me-2"></i>Description</h5>
                                     <div class="row">
-                                        <div class="col-md-12">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Date Created <span class="text-danger">*</span></label>
+                                            {{ form.date_created }}
+                                            {% if form.date_created.errors %}<div class="text-danger small">{{ form.date_created.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-8 mb-3">
                                             <label class="form-label">Description</label>
                                             {{ form.description }}
-                                            {% if form.description.errors %}
-                                            <div class="text-danger small mt-1">
-                                                <i class="ri-error-warning-line"></i> {{ form.description.errors|join:", " }}
-                                            </div>
-                                            {% endif %}
-                                            <small class="text-muted">Optional description of the incentive</small>
+                                            {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
                                         </div>
                                     </div>
                                 </div>
 
-                                <hr>
-
-                                <!-- Allocation Information -->
-                                <div class="mb-4">
-                                    <h5 class="mb-3"><i class="ri-building-line me-2"></i>Allocation Information</h5>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Redemption Center <span class="text-danger">*</span></label>
-                                            {{ form.redemption_center }}
-                                            {% if form.redemption_center.errors %}
-                                            <div class="text-danger small mt-1">
-                                                <i class="ri-error-warning-line"></i> {{ form.redemption_center.errors|join:", " }}
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Date Sent <span class="text-danger">*</span></label>
-                                            {{ form.date_sent }}
-                                            {% if form.date_sent.errors %}
-                                            <div class="text-danger small mt-1">
-                                                <i class="ri-error-warning-line"></i> {{ form.date_sent.errors|join:", " }}
-                                            </div>
-                                            {% endif %}
-                                            <small class="text-muted">Default is today's date, but you can adjust if needed</small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {% if incentive %}
-                                <hr>
-                                <div class="mb-4">
-                                    <h5 class="mb-3"><i class="ri-file-list-line me-2"></i>Registration Information</h5>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <label class="form-label">Incentive ID</label>
-                                            <input type="text" class="form-control" value="{{ incentive.incentive_id }}" readonly>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Created</label>
-                                            <input type="text" class="form-control" value="{{ incentive.created_at|date:'F d, Y H:i' }}" readonly>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Last Updated</label>
-                                            <input type="text" class="form-control" value="{{ incentive.updated_at|date:'F d, Y H:i' }}" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endif %}
-
-                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                <div class="d-flex justify-content-between mt-2">
                                     <a href="{% url 'incentives_list' %}" class="btn btn-secondary">
-                                        <i class="ri-close-line me-1"></i> Cancel
+                                        <i class="ri-arrow-left-line me-1"></i> Cancel
                                     </a>
                                     <button type="submit" class="btn btn-primary">
                                         <i class="ri-save-line me-1"></i> Save Incentive
@@ -151,4 +79,3 @@
     </div>
 </div>
 {% endblock content %}
-
