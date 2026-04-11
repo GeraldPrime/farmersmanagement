@@ -173,7 +173,12 @@ function verifyIdentity() {
         headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded'},
         body: `id_type=${currentType}&id_value=${encodeURIComponent(value)}`
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) {
+            return r.text().then(t => { throw new Error(`Server error ${r.status}: ${t.substring(0, 300)}`); });
+        }
+        return r.json();
+    })
     .then(data => {
         loadingDiv.classList.add('d-none');
         if (data.success) {
@@ -194,13 +199,13 @@ function verifyIdentity() {
             }
             resultDiv.classList.remove('d-none');
         } else {
-            errorDiv.textContent = data.error;
+            errorDiv.textContent = data.error || 'Verification failed.';
             errorDiv.classList.remove('d-none');
         }
     })
-    .catch(() => {
+    .catch(err => {
         loadingDiv.classList.add('d-none');
-        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.textContent = err.message || 'Network error. Please try again.';
         errorDiv.classList.remove('d-none');
     });
 }

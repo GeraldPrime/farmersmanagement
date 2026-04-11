@@ -17,8 +17,8 @@
                             <div class="page-title-box">
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
-                                        <li class="breadcrumb-item"><a href="javascript: void(0);">Velonic</a></li>
-                                        <li class="breadcrumb-item"><a href="javascript: void(0);">Dashboards</a></li>
+                                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">FMS</a></li>
+                                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                                         <li class="breadcrumb-item active">Welcome!</li>
                                     </ol>
                                 </div>
@@ -112,92 +112,28 @@
                                                     class="ri-subtract-line"></i></a>
                                             <a href="#" data-bs-toggle="remove"><i class="ri-close-line"></i></a>
                                         </div>
-                                        <h5 class="header-title mb-0">Projects</h5>
+                                        <h5 class="header-title mb-0">Quick Actions</h5>
                                     </div>
 
                                     <div id="yearly-sales-collapse" class="collapse show">
-
-                                        <div class="table-responsive">
-                                            <table class="table table-nowrap table-hover mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Project Name</th>
-                                                        <th>Start Date</th>
-                                                        <th>Due Date</th>
-                                                        <th>Status</th>
-                                                        <th>Assign</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Velonic Admin v1</td>
-                                                        <td>01/01/2015</td>
-                                                        <td>26/04/2015</td>
-                                                        <td><span class="badge bg-info-subtle text-info">Released</span>
-                                                        </td>
-                                                        <td>Techzaa Studio</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>2</td>
-                                                        <td>Velonic Frontend v1</td>
-                                                        <td>01/01/2015</td>
-                                                        <td>26/04/2015</td>
-                                                        <td><span class="badge bg-info-subtle text-info">Released</span>
-                                                        </td>
-                                                        <td>Techzaa Studio</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>3</td>
-                                                        <td>Velonic Admin v1.1</td>
-                                                        <td>01/05/2015</td>
-                                                        <td>10/05/2015</td>
-                                                        <td><span class="badge bg-pink-subtle text-pink">Pending</span>
-                                                        </td>
-                                                        <td>Techzaa Studio</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>4</td>
-                                                        <td>Velonic Frontend v1.1</td>
-                                                        <td>01/01/2015</td>
-                                                        <td>31/05/2015</td>
-                                                        <td><span class="badge bg-purple-subtle text-purple">Work in
-                                                                Progress</span></td>
-                                                        <td>Techzaa Studio</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>5</td>
-                                                        <td>Velonic Admin v1.3</td>
-                                                        <td>01/01/2015</td>
-                                                        <td>31/05/2015</td>
-                                                        <td><span class="badge bg-warning-subtle text-warning">Coming
-                                                                soon</span></td>
-                                                        <td>Techzaa Studio</td>
-                                                    </tr>
-
-                                                    <tr>
-                                                        <td>6</td>
-                                                        <td>Velonic Admin v1.3</td>
-                                                        <td>01/01/2015</td>
-                                                        <td>31/05/2015</td>
-                                                        <td><span class="badge bg-primary-subtle text-primary">Coming
-                                                                soon</span></td>
-                                                        <td>Techzaa Studio</td>
-                                                    </tr>
-
-                                                    <tr>
-                                                        <td>7</td>
-                                                        <td>Velonic Admin v1.3</td>
-                                                        <td>01/01/2015</td>
-                                                        <td>31/05/2015</td>
-                                                        <td><span class="badge bg-danger-subtle text-danger">Cool</span>
-                                                        </td>
-                                                        <td>Techzaa Studio</td>
-                                                    </tr>
-
-                                                </tbody>
-                                            </table>
+                                        <div class="p-3">
+                                            <div class="d-grid gap-2">
+                                                <a href="{% url 'farmer_verify' %}" class="btn btn-success">
+                                                    <i class="ri-shield-check-line me-2"></i>Verify &amp; Register Farmer
+                                                </a>
+                                                <a href="{% url 'farmers_list' %}" class="btn btn-outline-secondary">
+                                                    <i class="ri-group-line me-2"></i>View All Farmers
+                                                </a>
+                                                <a href="{% url 'admin_disburse' %}" class="btn btn-outline-primary">
+                                                    <i class="ri-gift-line me-2"></i>Disburse Incentive
+                                                </a>
+                                                <a href="{% url 'incentives_list' %}" class="btn btn-outline-warning">
+                                                    <i class="ri-award-line me-2"></i>Manage Incentives
+                                                </a>
+                                                <a href="{% url 'vendors_list' %}" class="btn btn-outline-info">
+                                                    <i class="ri-store-line me-2"></i>Manage Vendors
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

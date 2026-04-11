@@ -16,7 +16,7 @@
     <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'assets/images/fms-favicon.svg' %}">
 
     <!-- Theme Config Js -->
     <script src="{% static 'assets/js/config.js' %}"></script>
@@ -34,21 +34,13 @@
 
                     <!-- Topbar Brand Logo -->
                     <div class="logo-topbar">
-                        <a href="{% url 'vendor_dashboard' %}" class="logo-light">
-                            <span class="logo-lg">
-                                <img src="{% static 'assets/images/logo.png' %}" alt="logo">
+                        <a href="{% url 'vendor_dashboard' %}" class="logo-light logo-dark" style="text-decoration:none;">
+                            <span class="logo-lg" style="display:flex;align-items:center;gap:0.4rem;">
+                                <img src="{% static 'assets/images/fms-favicon.svg' %}" alt="FMS" width="28" height="28">
+                                <span style="font-size:1.05rem;font-weight:800;color:#fff;letter-spacing:-0.01em;line-height:1;">Farmers MS</span>
                             </span>
                             <span class="logo-sm">
-                                <img src="{% static 'assets/images/logo-sm.png' %}" alt="small logo">
-                            </span>
-                        </a>
-
-                        <a href="{% url 'vendor_dashboard' %}" class="logo-dark">
-                            <span class="logo-lg">
-                                <img src="{% static 'assets/images/logo-dark.png' %}" alt="dark logo">
-                            </span>
-                            <span class="logo-sm">
-                                <img src="{% static 'assets/images/logo-sm.png' %}" alt="small logo">
+                                <img src="{% static 'assets/images/fms-favicon.svg' %}" alt="FMS" width="28" height="28">
                             </span>
                         </a>
                     </div>
@@ -101,23 +93,14 @@
 
         <!-- ========== Left Sidebar Start ========== -->
         <div class="leftside-menu">
-            <!-- Brand Logo Light -->
-            <a href="{% url 'vendor_dashboard' %}" class="logo logo-light">
-                <span class="logo-lg">
-                    <img src="{% static 'assets/images/logo.png' %}" alt="logo">
+            <!-- Brand Logo -->
+            <a href="{% url 'vendor_dashboard' %}" class="logo logo-light logo-dark" style="text-decoration:none;">
+                <span class="logo-lg" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0;">
+                    <img src="{% static 'assets/images/fms-favicon.svg' %}" alt="FMS" width="32" height="32">
+                    <span style="font-size:1rem;font-weight:800;color:#fff;letter-spacing:-0.01em;line-height:1.1;">Farmers<br><span style="font-weight:500;font-size:0.8rem;opacity:0.85;">Vendor Portal</span></span>
                 </span>
                 <span class="logo-sm">
-                    <img src="{% static 'assets/images/logo-sm.png' %}" alt="small logo">
-                </span>
-            </a>
-
-            <!-- Brand Logo Dark -->
-            <a href="{% url 'vendor_dashboard' %}" class="logo logo-dark">
-                <span class="logo-lg">
-                    <img src="{% static 'assets/images/logo-dark.png' %}" alt="dark logo">
-                </span>
-                <span class="logo-sm">
-                    <img src="{% static 'assets/images/logo-sm.png' %}" alt="small logo">
+                    <img src="{% static 'assets/images/fms-favicon.svg' %}" alt="FMS" width="32" height="32">
                 </span>
             </a>
 

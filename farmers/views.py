@@ -907,6 +907,33 @@ def get_lgas_by_state(request):
 
 
 # ============================================================================
+# ADMIN AUTHENTICATION
+# ============================================================================
+
+def admin_login(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect(request.GET.get('next', 'dashboard'))
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_staff:
+            login(request, user)
+            next_url = request.POST.get('next') or request.GET.get('next') or 'dashboard'
+            return redirect(next_url)
+        messages.error(request, 'Invalid credentials or insufficient permissions.')
+
+    return render(request, 'admin/portal_login.html', {'next': request.GET.get('next', '')})
+
+
+def admin_logout(request):
+    logout(request)
+    messages.success(request, 'You have been logged out.')
+    return redirect('admin_login')
+
+
+# ============================================================================
 # VENDOR AUTHENTICATION
 # ============================================================================
 

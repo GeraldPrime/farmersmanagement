@@ -16,7 +16,7 @@
     <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'assets/images/fms-favicon.svg' %}">
 
     <!-- Daterangepicker css -->
     <link rel="stylesheet" href="{% static 'assets/vendor/daterangepicker/daterangepicker.css' %}">
@@ -47,23 +47,13 @@
 
                     <!-- Topbar Brand Logo -->
                     <div class="logo-topbar">
-                        <!-- Logo light -->
-                        <a href="{% url 'dashboard' %}" class="logo-light">
-                            <span class="logo-lg">
-                                <img src="{% static 'assets/images/logo.png' %}" alt="logo">
+                        <a href="{% url 'dashboard' %}" class="logo-light logo-dark" style="text-decoration:none;">
+                            <span class="logo-lg" style="display:flex;align-items:center;gap:0.4rem;">
+                                <img src="{% static 'assets/images/fms-favicon.svg' %}" alt="FMS" width="28" height="28">
+                                <span style="font-size:1.05rem;font-weight:800;color:#fff;letter-spacing:-0.01em;line-height:1;">Farmers MS</span>
                             </span>
                             <span class="logo-sm">
-                                <img src="{% static 'assets/images/logo-sm.png' %}" alt="small logo">
-                            </span>
-                        </a>
-
-                        <!-- Logo Dark -->
-                        <a href="{% url 'dashboard' %}" class="logo-dark">
-                            <span class="logo-lg">
-                                <img src="{% static 'assets/images/logo-dark.png' %}" alt="dark logo">
-                            </span>
-                            <span class="logo-sm">
-                                <img src="{% static 'assets/images/logo-sm.png' %}" alt="small logo">
+                                <img src="{% static 'assets/images/fms-favicon.svg' %}" alt="FMS" width="28" height="28">
                             </span>
                         </a>
                     </div>
@@ -120,42 +110,18 @@
                                     class="rounded-circle">
                             </span>
                             <span class="d-lg-block d-none">
-                                <h5 class="my-0 fw-normal">Thomson <i
+                                <h5 class="my-0 fw-normal">{{ request.user.get_full_name|default:request.user.username }} <i
                                         class="ri-arrow-down-s-line d-none d-sm-inline-block align-middle"></i></h5>
                             </span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown">
                             <!-- item-->
-                            <div class=" dropdown-header noti-title">
-                                <h6 class="text-overflow m-0">Welcome !</h6>
+                            <div class="dropdown-header noti-title">
+                                <h6 class="text-overflow m-0">Welcome, {{ request.user.username }}!</h6>
                             </div>
 
                             <!-- item-->
-                            <a href="pages-profile.html" class="dropdown-item">
-                                <i class="ri-account-circle-line fs-18 align-middle me-1"></i>
-                                <span>My Account</span>
-                            </a>
-
-                            <!-- item-->
-                            <a href="pages-profile.html" class="dropdown-item">
-                                <i class="ri-settings-4-line fs-18 align-middle me-1"></i>
-                                <span>Settings</span>
-                            </a>
-
-                            <!-- item-->
-                            <a href="pages-faq.html" class="dropdown-item">
-                                <i class="ri-customer-service-2-line fs-18 align-middle me-1"></i>
-                                <span>Support</span>
-                            </a>
-
-                            <!-- item-->
-                            <a href="auth-lock-screen.html" class="dropdown-item">
-                                <i class="ri-lock-password-line fs-18 align-middle me-1"></i>
-                                <span>Lock Screen</span>
-                            </a>
-
-                            <!-- item-->
-                            <a href="auth-logout-2.html" class="dropdown-item">
+                            <a href="{% url 'admin_logout' %}" class="dropdown-item text-danger">
                                 <i class="ri-logout-box-line fs-18 align-middle me-1"></i>
                                 <span>Logout</span>
                             </a>
@@ -170,23 +136,14 @@
         <!-- ========== Left Sidebar Start ========== -->
         <div class="leftside-menu">
 
-            <!-- Brand Logo Light -->
-            <a href="{% url 'dashboard' %}" class="logo logo-light">
-                <span class="logo-lg">
-                    <img src="{% static 'assets/images/logo.png' %}" alt="logo">
+            <!-- Brand Logo -->
+            <a href="{% url 'dashboard' %}" class="logo logo-light logo-dark" style="text-decoration:none;">
+                <span class="logo-lg" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0;">
+                    <img src="{% static 'assets/images/fms-favicon.svg' %}" alt="FMS" width="32" height="32">
+                    <span style="font-size:1rem;font-weight:800;color:#fff;letter-spacing:-0.01em;line-height:1.1;">Farmers<br><span style="font-weight:500;font-size:0.8rem;opacity:0.85;">Management System</span></span>
                 </span>
                 <span class="logo-sm">
-                    <img src="{% static 'assets/images/logo-sm.png' %}" alt="small logo">
-                </span>
-            </a>
-
-            <!-- Brand Logo Dark -->
-            <a href="{% url 'dashboard' %}" class="logo logo-dark">
-                <span class="logo-lg">
-                    <img src="{% static 'assets/images/logo-dark.png' %}" alt="dark logo">
-                </span>
-                <span class="logo-sm">
-                    <img src="{% static 'assets/images/logo-sm.png' %}" alt="small logo">
+                    <img src="{% static 'assets/images/fms-favicon.svg' %}" alt="FMS" width="32" height="32">
                 </span>
             </a>
 
@@ -484,8 +441,8 @@
                     <button type="button" class="btn btn-light w-100" id="reset-layout">Reset</button>
                 </div>
                 <div class="col-6">
-                    <a href="https://1.envato.market/velonic" target="_blank" role="button"
-                        class="btn btn-primary w-100">Buy Now</a>
+                    <a href="{% url 'dashboard' %}" role="button"
+                        class="btn btn-primary w-100">Dashboard</a>
                 </div>
             </div>
         </div>

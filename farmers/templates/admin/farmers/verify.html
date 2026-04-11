@@ -78,9 +78,11 @@
                                     <div class="card-body">
                                         <div class="row">
                                             <div class="col-md-3 text-center mb-3 mb-md-0">
-                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
-                                                     style="width:80px;height:80px;">
-                                                    <i class="ri-user-line text-white" style="font-size:2rem;"></i>
+                                                <div id="photoContainer">
+                                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
+                                                         style="width:80px;height:80px;">
+                                                        <i class="ri-user-line text-white" style="font-size:2rem;"></i>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-9">
@@ -157,7 +159,12 @@ function verifyIdentity() {
         headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded'},
         body: `id_type=${currentType}&id_value=${encodeURIComponent(value)}`
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) {
+            return r.text().then(t => { throw new Error(`Server error ${r.status}: ${t.substring(0, 300)}`); });
+        }
+        return r.json();
+    })
     .then(data => {
         loadingDiv.classList.add('d-none');
         if (data.success) {
@@ -178,13 +185,13 @@ function verifyIdentity() {
             }
             resultDiv.classList.remove('d-none');
         } else {
-            errorDiv.textContent = data.error;
+            errorDiv.textContent = data.error || 'Verification failed.';
             errorDiv.classList.remove('d-none');
         }
     })
-    .catch(() => {
+    .catch(err => {
         loadingDiv.classList.add('d-none');
-        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.textContent = err.message || 'Network error. Please try again.';
         errorDiv.classList.remove('d-none');
     });
 }
